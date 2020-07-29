@@ -37,8 +37,6 @@ const char kBraveIpfsDescription[] =
 const char kBraveSuperReferralName[] = "Enable Brave Super Referral";
 const char kBraveSuperReferralDescription[] =
     "Use custom theme for Brave Super Referral";
-const char kBravePlaylistsName[] =
-    "Playlists";
-const char kBravePlaylistsDescription[] =
-    "Download web videos for later viewing.";
+const char kPlaylistName[] = "Playlist";
+const char kPlaylistDescription[] = "Download web videos for later viewing.";
 }  // namespace flag_descriptions

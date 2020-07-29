@@ -20,7 +20,7 @@
 #include "brave/components/brave_wayback_machine/buildflags.h"
 #include "brave/components/brave_webtorrent/browser/buildflags/buildflags.h"
 #include "brave/components/ipfs/browser/buildflags/buildflags.h"
-#include "brave/components/playlists/browser/buildflags/buildflags.h"
+#include "brave/components/playlist/browser/buildflags/buildflags.h"
 #include "brave/components/speedreader/buildflags.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -81,8 +81,8 @@
 #include "components/translate/core/browser/translate_pref_names.h"
 #endif
 
-#if BUILDFLAG(ENABLE_BRAVE_PLAYLISTS)
-#include "brave/components/playlists/common/pref_names.h"
+#if BUILDFLAG(ENABLE_PLAYLIST)
+#include "brave/components/playlist/common/pref_names.h"
 #endif
 
 using extensions::FeatureSwitch;
@@ -287,8 +287,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   brave_ads::RegisterP2APrefs(registry);
 #endif
 
-#if BUILDFLAG(ENABLE_BRAVE_PLAYLISTS)
-  registry->RegisterDictionaryPref(brave_playlists::kBravePlaylistItems);
+#if BUILDFLAG(ENABLE_PLAYLIST)
+  registry->RegisterDictionaryPref(playlist::kPlaylistItems);
 #endif
 
   RegisterProfilePrefsForMigration(registry);
