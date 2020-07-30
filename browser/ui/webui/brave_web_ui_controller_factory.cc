@@ -18,7 +18,7 @@
 #include "brave/components/brave_wallet/browser/buildflags/buildflags.h"
 #include "brave/components/ipfs/browser/buildflags/buildflags.h"
 #include "brave/components/ipfs/browser/features.h"
-#include "brave/components/playlist/browser/buildflags/buildflags.h"
+#include "brave/components/playlist/buildflags/buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
