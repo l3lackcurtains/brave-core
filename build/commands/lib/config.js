@@ -168,6 +168,9 @@ Config.prototype.buildArgs = function () {
   const chrome_version_parts = this.chromeVersion.split('.')
 
   let args = {
+    is_asan: this.buildAsan(),
+    enable_full_stack_frames_for_profiling: this.buildAsan(),
+    v8_enable_verify_heap: this.buildAsan(),
     fieldtrial_testing_like_official_build: true,
     safe_browsing_mode: 1,
     brave_services_key: this.braveServicesKey,
@@ -183,7 +186,7 @@ Config.prototype.buildArgs = function () {
     enable_widevine: true,
     target_cpu: this.targetArch,
     is_official_build: this.isOfficialBuild(),
-    is_debug: this.isDebug(),
+    is_debug: this.isDebug() && !this.buildAsan(),
     dcheck_always_on: this.isDcheckAlwaysOn(),
     brave_channel: this.channel,
     brave_google_api_key: this.braveGoogleApiKey,
@@ -371,6 +374,13 @@ Config.prototype.buildArgs = function () {
   return args
 }
 
+Config.prototype.buildAsan = function () {
+  if (this.asan) {
+    return this.asan;
+  }
+  return false;
+}
+
 Config.prototype.shouldSign = function () {
   if (this.skip_signing ||
       this.buildConfig !== 'Release' ||
@@ -462,6 +472,11 @@ Config.prototype.update = function (options) {
 
   if (options.target_os) {
     this.targetOS = options.target_os
+  }
+
+
+  if (options.asan) {
+    this.asan = true
   }
 
   if (options.C) {

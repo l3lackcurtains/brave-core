@@ -9,7 +9,9 @@
 #include "base/process/kill.h"
 
 namespace {
-
+#if !(defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(UNDEFINED_SANITIZER))
 #if defined(OS_MACOSX)
 // tor::switches::kTorExecutablePath
 const char kTorExecutablePath[] = "tor-executable-path";
@@ -41,6 +43,9 @@ void CleanupTor() {
   }
 }
 #endif  // defined(OS_MACOSX)
+#endif  // defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||
+        // defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) ||
+        // defined(UNDEFINED_SANITIZER)
 
 }  // namespace
 
