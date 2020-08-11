@@ -40,14 +40,21 @@
 @interface BraveSyncWorker()
 {
     ChromeBrowserState* browser_state_;
+    syncer::DeviceInfoTracker::Observer* observer;
 }
 @end
 
 @implementation BraveSyncWorker
 - (instancetype)init {
     if ((self = [super init])) {
+        //DCHECK(false);
         browser_state_ = BrowserStateManager::GetInstance().GetBrowserState();
         CHECK(browser_state_);
+        
+        syncer::SyncService* sync_service = [self getSyncService];
+        CHECK(sync_service);
+        
+        //observer = new syncer::DeviceInfoTracker::Observer();
     }
     return self;
 }
@@ -149,13 +156,13 @@
     
   const syncer::DeviceInfo* local_device_info = device_info_service
      ->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo();
-    
-//    const std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
-//       device_sync_service->GetDeviceInfoTracker()->GetAllDeviceInfo();
 
   base::Value device_list(base::Value::Type::LIST);
 
-  //std::vector<std::unique_ptr<syncer::DeviceInfo>>
+//    const std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
+//       tracker->GetAllDeviceInfo();
+
+  fprintf(stderr, "DEVICE INFO: %p\n", local_device_info);
   for (const auto& device : tracker->GetAllDeviceInfo()) {
     auto device_value = base::Value::FromUniquePtrValue(device->ToValue());
     bool is_current_device = local_device_info
@@ -215,5 +222,22 @@
 //    brave_sync::Prefs brave_sync_prefs(profile_->GetPrefs());
 //    brave_sync_prefs.Clear();
 //    // Sync prefs will be clear in ProfileSyncService::StopImpl
+}
+
+- (void)start {
+    syncer::SyncService* service =
+        ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
+
+//    if (service && !sync_service_observer_.IsObserving(service)) {
+//      sync_service_observer_.Add(service);
+//    }
+
+    // Mark Sync as requested by the user. It might already be requested, but
+    // it's not if this is either the first time the user is setting up Sync, or
+    // Sync was set up but then was reset via the dashboard. This also pokes the
+    // SyncService to start up immediately, i.e. bypass deferred startup.
+    if (service) {
+      service->GetUserSettings()->SetSyncRequested(true);
+    }
 }
 @end

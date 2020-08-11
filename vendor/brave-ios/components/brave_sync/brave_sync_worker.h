@@ -9,4 +9,5 @@
 - (UIImage *)getQRCodeImage:(NSString *)passphrase withSize:(CGSize)size;
 - (NSString *)getDeviceListJSON;
 - (void)reset;
+- (void)start;
 @end
