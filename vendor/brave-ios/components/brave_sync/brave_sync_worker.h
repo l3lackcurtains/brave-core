@@ -3,4 +3,10 @@
 
 @interface BraveSyncWorker: NSObject
 - (instancetype)init;
+
+- (NSString *)getSyncCodeWords;
+- (bool)setSyncCodeWords:(NSString *)passphrase;
+- (UIImage *)getQRCodeImage:(NSString *)passphrase withSize:(CGSize)size;
+- (NSString *)getDeviceListJSON;
+- (void)reset;
 @end
