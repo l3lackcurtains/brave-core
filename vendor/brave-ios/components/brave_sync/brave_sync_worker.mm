@@ -3,6 +3,7 @@
 #include "brave/ios/browser/browser_state/browser_state_manager.h"
 #include "brave/vendor/brave-ios/components/brave_sync/brave_sync_service.h"
 
+#import <CoreImage/CoreImage.h>
 #include <string>
 #include <vector>
 
@@ -83,6 +84,45 @@
     return true;
 }
 
+- (UIImage *)getQRCodeImage:(NSString *)passphrase withSize:(CGSize)size {
+    std::vector<uint8_t> seed;
+    std::string code_words = base::SysNSStringToUTF8(passphrase);
+    if (!brave_sync::crypto::PassphraseToBytes32(code_words, &seed)) {
+        LOG(ERROR) << "[BraveSync] Invalid sync code when generating QRCode";
+        return nil;
+    }
+    
+    // QR code version 3 can only carry 84 bytes so we hex encode 32 bytes
+    // seed then we will have 64 bytes input data
+    const std::string sync_code_hex = base::HexEncode(seed.data(), seed.size());
+    
+    NSData *sync_code_data = [base::SysUTF8ToNSString(sync_code_hex.c_str()) dataUsingEncoding: NSUTF8StringEncoding]; //NSISOLatin1StringEncoding
+    
+    if (!sync_code_data) {
+      LOG(ERROR) << "[BraveSync] Failed to convert sync_code_hex to NSData for QRCode generation";
+      return nil;
+    }
+
+    CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+    [filter setValue:sync_code_data forKey:@"inputMessage"];
+    [filter setValue:@"H" forKey:@"inputCorrectionLevel"];
+    
+    CIImage *ciImage = [filter outputImage];
+    if (ciImage) {
+      CGFloat scaleX = size.width / ciImage.extent.size.width;
+      CGFloat scaleY = size.height / ciImage.extent.size.height;
+      CGAffineTransform transform = CGAffineTransformMakeScale(scaleX, scaleY);
+      ciImage = [ciImage imageByApplyingTransform:transform];
+    }
+
+    if (ciImage) {
+        return [UIImage imageWithCIImage:ciImage scale:[[UIScreen mainScreen] scale] orientation:UIImageOrientationUp];
+    }
+    
+    LOG(ERROR) << "[BraveSync] Failed to generate QRCode";
+    return nil;
+}
+
 - (syncer::SyncService *)getSyncService {
     return static_cast<syncer::SyncService*>(
                                              ProfileSyncServiceFactory::GetForBrowserState(browser_state_));
@@ -100,28 +140,80 @@
   return device_info_sync_service->GetLocalDeviceInfoProvider();
 }
 
-- (std::vector<std::unique_ptr<DeviceInfo>>)getDeviceList {
-    std::vector<std::unique_ptr<syncer::DeviceInfo>> result;
+- (base::Value) getDeviceList {
+  auto* device_info_service =
+      DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state_);
+  syncer::DeviceInfoTracker* tracker =
+      device_info_service->GetDeviceInfoTracker();
+  DCHECK(tracker);
     
-    auto* device_info_service =
-        DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state_);
-    syncer::DeviceInfoTracker* tracker =
-        device_info_service->GetDeviceInfoTracker();
-    DCHECK(tracker);
-    
-    const syncer::DeviceInfo* local_device_info = device_info_service
-       ->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo();
+  const syncer::DeviceInfo* local_device_info = device_info_service
+     ->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo();
     
 //    const std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
-//    device_sync_service->GetDeviceInfoTracker()->GetAllDeviceInfo();
+//       device_sync_service->GetDeviceInfoTracker()->GetAllDeviceInfo();
+
+  base::Value device_list(base::Value::Type::LIST);
+
+  //std::vector<std::unique_ptr<syncer::DeviceInfo>>
+  for (const auto& device : tracker->GetAllDeviceInfo()) {
+    auto device_value = base::Value::FromUniquePtrValue(device->ToValue());
+    bool is_current_device = local_device_info
+        ? local_device_info->guid() == device->guid()
+        : false;
+    device_value.SetBoolKey("isCurrentDevice", is_current_device);
+    device_list.Append(std::move(device_value));
+  }
+
+  return device_list;
+}
+
+- (NSString *)getDeviceListJSON {
+    std::string json_string;
+    base::Value device_list = [self getDeviceList];
     
-    for (const auto& device : tracker->GetAllDeviceInfo()) {
-      bool is_current_device =
-          local_device_info ? local_device_info->guid() == device->guid() : false;
-        
-        
-      //device_value.SetBoolKey("isCurrentDevice", is_current_device);
-      //device_list.Append(std::move(device_value));
+    if (!base::JSONWriter::Write(device_list, &json_string)) {
+      VLOG(1) << "[BraveSync] Writing as Device List to JSON failed.";
     }
+    
+    if (!json_string.empty()) {
+      return base::SysUTF8ToNSString(json_string.c_str());
+    }
+    return nil;
+}
+
+- (void)reset {
+    auto* sync_service = [self getSyncService];
+    
+    // Do not send self deleted commit if engine is not up and running
+    if (!sync_service || sync_service->GetTransportState() !=
+        syncer::SyncService::TransportState::ACTIVE) {
+      [self onSelfDeleted];
+      return;
+    }
+
+    syncer::DeviceInfoTracker* tracker = [self getDeviceInfoTracker];
+    DCHECK(tracker);
+    
+    const syncer::DeviceInfo* local_device_info =
+        [self getLocalDeviceInfoProvider]->GetLocalDeviceInfo();
+
+    (void)local_device_info;
+//    tracker->DeleteDeviceInfo(local_device_info->guid(),
+//                              base::BindOnce(&onSelfDeleted,
+//                                             weak_ptr_factory_.GetWeakPtr(),
+//                                             std::move(callback_id_arg)));
+}
+
+- (void)onSelfDeleted {
+//    auto* sync_service = [self getSyncService];
+//    if (sync_service) {
+//      // This function will follow normal reset process and set SyncRequested to
+//      // false
+//      sync_service->StopAndClear();
+//    }
+//    brave_sync::Prefs brave_sync_prefs(profile_->GetPrefs());
+//    brave_sync_prefs.Clear();
+//    // Sync prefs will be clear in ProfileSyncService::StopImpl
 }
 @end
