@@ -10,4 +10,6 @@
 - (NSString *)getDeviceListJSON;
 - (void)reset;
 - (void)start;
+- (bool)isFirstSetupComplete;
+- (void)finalizeSetup;
 @end

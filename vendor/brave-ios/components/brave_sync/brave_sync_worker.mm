@@ -24,6 +24,7 @@
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/local_device_info_provider.h"
+#include "components/unified_consent/unified_consent_metrics.h"
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -37,10 +38,68 @@
 //static const size_t SEED_BYTES_COUNT = 32u;
 //}  // namespace
 
+
+#include "base/scoped_observer.h"
+#include "components/sync_device_info/device_info_tracker.h"
+
+namespace chrome {
+namespace ios {
+class BraveSyncDevicesIOS : public syncer::DeviceInfoTracker::Observer {
+ public:
+  BraveSyncDevicesIOS();
+  virtual ~BraveSyncDevicesIOS();
+
+  void Destroy();
+
+ private:
+  // syncer::DeviceInfoTracker::Observer
+  void OnDeviceInfoChange() override;
+    
+  ScopedObserver<syncer::DeviceInfoTracker, syncer::DeviceInfoTracker::Observer>
+      device_info_tracker_observer_{this};
+
+  ChromeBrowserState* browser_state_ = nullptr;
+};
+
+}
+}
+
+namespace chrome {
+namespace ios {
+
+BraveSyncDevicesIOS::BraveSyncDevicesIOS() {
+  browser_state_ = BrowserStateManager::GetInstance().GetBrowserState();
+  CHECK(browser_state_);
+
+  syncer::DeviceInfoTracker* tracker =
+    DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state_)
+       ->GetDeviceInfoTracker();
+  DCHECK(tracker);
+  if (tracker) {
+    device_info_tracker_observer_.Add(tracker);
+  }
+}
+
+BraveSyncDevicesIOS::~BraveSyncDevicesIOS() {
+  // Observer will be removed by ScopedObserver
+}
+
+void BraveSyncDevicesIOS::Destroy() {
+  delete this;
+}
+
+void BraveSyncDevicesIOS::OnDeviceInfoChange() {
+  fprintf(stderr, "DEVICE INFO CHANGED\n");
+}
+
+}  // namespace ios
+}  // namespace chrome
+
+
 @interface BraveSyncWorker()
 {
     ChromeBrowserState* browser_state_;
-    syncer::DeviceInfoTracker::Observer* observer;
+    chrome::ios::BraveSyncDevicesIOS* device_;
 }
 @end
 
@@ -51,15 +110,13 @@
         browser_state_ = BrowserStateManager::GetInstance().GetBrowserState();
         CHECK(browser_state_);
         
-        syncer::SyncService* sync_service = [self getSyncService];
-        CHECK(sync_service);
-        
-        //observer = new syncer::DeviceInfoTracker::Observer();
+        device_ = new chrome::ios::BraveSyncDevicesIOS();
     }
     return self;
 }
 
 - (void)dealloc {
+    device_->Destroy();
     browser_state_ = nullptr;
 }
 
@@ -192,7 +249,6 @@
 - (void)reset {
     auto* sync_service = [self getSyncService];
     
-    // Do not send self deleted commit if engine is not up and running
     if (!sync_service || sync_service->GetTransportState() !=
         syncer::SyncService::TransportState::ACTIVE) {
       [self onSelfDeleted];
@@ -215,8 +271,6 @@
 - (void)onSelfDeleted {
 //    auto* sync_service = [self getSyncService];
 //    if (sync_service) {
-//      // This function will follow normal reset process and set SyncRequested to
-//      // false
 //      sync_service->StopAndClear();
 //    }
 //    brave_sync::Prefs brave_sync_prefs(profile_->GetPrefs());
@@ -232,12 +286,30 @@
 //      sync_service_observer_.Add(service);
 //    }
 
-    // Mark Sync as requested by the user. It might already be requested, but
-    // it's not if this is either the first time the user is setting up Sync, or
-    // Sync was set up but then was reset via the dashboard. This also pokes the
-    // SyncService to start up immediately, i.e. bypass deferred startup.
     if (service) {
       service->GetUserSettings()->SetSyncRequested(true);
     }
+}
+
+- (bool)isFirstSetupComplete {
+    syncer::SyncService* sync_service = [self getSyncService];
+    return sync_service &&
+           sync_service->GetUserSettings()->IsFirstSetupComplete();
+}
+
+- (void)finalizeSetup {
+    syncer::SyncService* service = [self getSyncService];
+    if (!service)
+      return;
+
+    service->GetUserSettings()->SetSyncRequested(true);
+    if (service->GetUserSettings()->IsFirstSetupComplete())
+      return;
+
+    unified_consent::metrics::RecordSyncSetupDataTypesHistrogam(
+        service->GetUserSettings(), browser_state_->GetPrefs());
+
+    service->GetUserSettings()->SetFirstSetupComplete(
+        syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM);
 }
 @end

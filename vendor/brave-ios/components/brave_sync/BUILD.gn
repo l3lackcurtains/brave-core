@@ -34,6 +34,7 @@ source_set("brave_sync") {
     "//brave/ios/app",
     "//brave/ios/browser",
     "//components/bookmarks/browser",
+    "//components/unified_consent",
     "//ios/chrome/browser/providers:provider_factory",
     "//ios/public/provider/chrome/browser",
     "//ios/web/public/init",
