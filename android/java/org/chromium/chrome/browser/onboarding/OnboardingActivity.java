@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.chrome.R;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.chrome.browser.onboarding.NonSwipeableViewPager;
+import org.chromium.chrome.browser.custom_layout.NonSwipeableViewPager;
 import org.chromium.chrome.browser.onboarding.OnboardingPrefManager;
 import org.chromium.chrome.browser.onboarding.OnboardingViewPagerAdapter;
 import org.chromium.chrome.browser.BraveActivity;
