@@ -17,10 +17,11 @@ import * as gridSitesActions from '../actions/grid_sites_actions'
 import * as binanceActions from '../actions/binance_actions'
 import * as rewardsActions from '../actions/rewards_actions'
 import * as geminiActions from '../actions/gemini_actions'
+import * as cryptoDotComActions from '../actions/cryptoDotCom_actions'
 import * as PreferencesAPI from '../api/preferences'
 
 interface Props {
-  actions: typeof newTabActions & typeof gridSitesActions & typeof binanceActions & typeof rewardsActions & typeof geminiActions
+  actions: typeof newTabActions & typeof gridSitesActions & typeof binanceActions & typeof rewardsActions & typeof geminiActions & typeof cryptoDotComActions
   newTabData: NewTab.State
   gridSitesData: NewTab.GridSitesState
 }
@@ -50,6 +51,7 @@ class DefaultPage extends React.Component<Props, {}> {
           saveShowBinance={PreferencesAPI.saveShowBinance}
           saveShowAddCard={PreferencesAPI.saveShowAddCard}
           saveShowGemini={PreferencesAPI.saveShowGemini}
+          saveShowCryptoDotCom={PreferencesAPI.saveShowCryptoDotCom}
           saveBrandedWallpaperOptIn={PreferencesAPI.saveBrandedWallpaperOptIn}
         />
       )

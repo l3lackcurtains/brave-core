@@ -48,6 +48,7 @@ export interface Props {
   toggleShowTogether: () => void
   toggleShowBinance: () => void
   toggleShowGemini: () => void
+  toggleShowCryptoDotCom: () => void
   toggleBrandedWallpaperOptIn: () => void
   showBackgroundImage: boolean
   showStats: boolean

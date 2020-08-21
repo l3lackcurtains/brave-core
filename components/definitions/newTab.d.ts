@@ -72,7 +72,7 @@ declare namespace NewTab {
     url: string
   }
 
-  export type StackWidget = 'rewards' | 'binance' | 'together' | 'gemini' | ''
+  export type StackWidget = 'rewards' | 'cryptoDotCom' | 'binance' | 'together' | 'gemini' | ''
 
   export interface LegacyState {
     pinnedTopSites: Site[]
@@ -97,6 +97,7 @@ declare namespace NewTab {
   export interface PersistentState {
     togetherSupported: boolean
     geminiSupported: boolean
+    cryptoDotComSupported: boolean
     showEmptyPage: boolean
     rewardsState: RewardsWidgetState
     currentStackWidget: StackWidget
@@ -104,6 +105,7 @@ declare namespace NewTab {
     widgetStackOrder: StackWidget[]
     binanceState: BinanceWidgetState
     geminiState: GeminiWidgetState
+    cryptoDotComState: CryptoDotComWidgetState
   }
 
   export interface EphemeralState {
@@ -125,7 +127,8 @@ declare namespace NewTab {
     showTogether: boolean
     showBinance: boolean
     showAddCard: boolean
-    showGemini: boolean
+    showGemini: boolean,
+    showCryptoDotCom: boolean,
     brandedWallpaperOptIn: boolean
     isBrandedWallpaperNotificationDismissed: boolean
     stats: Stats,
@@ -189,6 +192,12 @@ declare namespace NewTab {
     accountBalances: Record<string, string>
     disconnectInProgress: boolean
     authInvalid: boolean
+  }
+
+  export interface CryptoDotComWidgetState {
+    optInTotal: boolean
+    optInBTCPrice: boolean
+    tickerPrices: Record<string, any>
   }
 
   export type BinanceTLD = 'us' | 'com'
