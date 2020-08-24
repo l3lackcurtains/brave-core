@@ -4,7 +4,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-#include "brave/common/url_constants.h"
+#include "brave/common/brave_url_constants.h"
 
 const char kChromeExtensionScheme[] = "chrome-extension";
 const char kBraveUIScheme[] = "brave";

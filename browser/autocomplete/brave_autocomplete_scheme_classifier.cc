@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/strings/string_util.h"
-#include "brave/common/url_constants.h"
+#include "brave/common/brave_url_constants.h"
 #include "chrome/browser/profiles/profile.h"
 
 #if BUILDFLAG(ENABLE_BRAVE_WEBTORRENT)

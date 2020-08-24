@@ -14,7 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/values.h"
-#include "brave/common/url_constants.h"
+#include "brave/common/brave_url_constants.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"

@@ -16,7 +16,7 @@
 #include "brave/browser/brave_browser_process_impl.h"
 #include "brave/browser/ui/webui/basic_ui.h"
 #include "brave/common/pref_names.h"
-#include "brave/common/webui_url_constants.h"
+#include "brave/common/brave_webui_url_constants.h"
 #include "brave/components/brave_rewards/browser/publisher_banner.h"
 #include "brave/components/brave_rewards/browser/rewards_service.h"
 #include "brave/browser/brave_rewards/rewards_service_factory.h"

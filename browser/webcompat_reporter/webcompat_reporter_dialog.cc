@@ -13,7 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "brave/common/webui_url_constants.h"
+#include "brave/common/brave_webui_url_constants.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"

@@ -20,7 +20,7 @@
 #include "brave/browser/net/brave_proxying_web_socket.h"
 #include "brave/browser/tor/buildflags.h"
 #include "brave/common/pref_names.h"
-#include "brave/common/webui_url_constants.h"
+#include "brave/common/brave_webui_url_constants.h"
 #include "brave/components/binance/browser/buildflags/buildflags.h"
 #include "brave/components/gemini/browser/buildflags/buildflags.h"
 #include "brave/components/brave_ads/browser/buildflags/buildflags.h"

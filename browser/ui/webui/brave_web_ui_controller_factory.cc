@@ -13,7 +13,7 @@
 #include "brave/browser/ui/webui/webcompat_reporter_ui.h"
 #include "brave/common/brave_features.h"
 #include "brave/common/pref_names.h"
-#include "brave/common/webui_url_constants.h"
+#include "brave/common/brave_webui_url_constants.h"
 #include "brave/components/brave_rewards/browser/buildflags/buildflags.h"
 #include "brave/components/brave_wallet/browser/buildflags/buildflags.h"
 #include "chrome/browser/profiles/profile.h"

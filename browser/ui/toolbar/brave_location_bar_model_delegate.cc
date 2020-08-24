@@ -6,7 +6,7 @@
 #include "brave/browser/ui/toolbar/brave_location_bar_model_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "brave/common/url_constants.h"
+#include "brave/common/brave_url_constants.h"
 #include "brave/components/brave_wallet/browser/buildflags/buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

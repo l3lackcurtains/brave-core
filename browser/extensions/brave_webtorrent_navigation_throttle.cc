@@ -10,7 +10,7 @@
 #include "brave/browser/profiles/profile_util.h"
 #include "brave/common/extensions/extension_constants.h"
 #include "brave/common/pref_names.h"
-#include "brave/common/url_constants.h"
+#include "brave/common/brave_url_constants.h"
 #include "brave/components/brave_webtorrent/browser/net/brave_torrent_redirect_network_delegate_helper.h"
 #include "brave/components/brave_webtorrent/browser/webtorrent_util.h"
 #include "chrome/browser/extensions/extension_service.h"

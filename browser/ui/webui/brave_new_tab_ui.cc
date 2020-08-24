@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "brave/browser/ui/webui/basic_ui.h"
 #include "brave/browser/ui/webui/brave_new_tab_message_handler.h"
-#include "brave/common/webui_url_constants.h"
+#include "brave/common/brave_webui_url_constants.h"
 #include "brave/components/brave_new_tab/resources/grit/brave_new_tab_generated_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/grit/brave_components_resources.h"

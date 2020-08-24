@@ -13,7 +13,7 @@
 #include "brave/common/brave_wallet_constants.h"
 #include "brave/common/extensions/extension_constants.h"
 #include "brave/common/pref_names.h"
-#include "brave/common/url_constants.h"
+#include "brave/common/brave_url_constants.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 #include "brave/grit/brave_generated_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"

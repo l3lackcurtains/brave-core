@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
-#include "brave/common/url_constants.h"
+#include "brave/common/brave_url_constants.h"
 #include "components/grit/brave_components_resources.h"
 #include "components/grit/brave_components_strings.h"
 #include "components/grit/components_resources.h"

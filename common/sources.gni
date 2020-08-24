@@ -1,0 +1,43 @@
+# Copyright (c) 2020 The Brave Authors. All rights reserved.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at http://mozilla.org/MPL/2.0/.
+
+brave_chrome_common_sources = [
+  "//brave/common/brave_content_client.cc",
+  "//brave/common/brave_content_client.h",
+  "//brave/common/brave_channel_info.cc",
+  "//brave/common/brave_channel_info.h",
+  "//brave/common/brave_features.cc",
+  "//brave/common/brave_features.h",
+  "//brave/common/brave_paths.cc",
+  "//brave/common/brave_paths.h",
+  "//brave/common/brave_common_message_generator.cc",
+  "//brave/common/brave_common_message_generator.h",
+  "//brave/common/resource_bundle_helper.cc",
+  "//brave/common/resource_bundle_helper.h",
+  "//brave/common/translate_network_constants.cc",
+  "//brave/common/translate_network_constants.h",
+  "//brave/common/brave_url_constants.cc",
+  "//brave/common/brave_url_constants.h",
+  "//brave/common/brave_webui_url_constants.cc",
+  "//brave/common/brave_webui_url_constants.h",
+]
+brave_chrome_common_public_deps = [
+  "//base",
+  "//brave/common:network_constants",
+  "//brave/common:pref_names",
+  "//brave/common:shield_exceptions",
+  "//brave/common:switches",
+  "//brave/chromium_src:common",
+  "//brave/components/brave_component_updater/browser:browser",
+  "//brave/components/resources",
+  "//brave/components/resources:static_resources_grit",
+  "//components/resources",
+  "//extensions/buildflags",
+  "//ipc",
+  "//services/service_manager",
+  "//third_party/widevine/cdm:buildflags",
+  "//third_party/widevine/cdm:headers",
+  "//ui/base",
+]

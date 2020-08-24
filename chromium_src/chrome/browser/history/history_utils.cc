@@ -7,7 +7,7 @@
 #include "../../../../../chrome/browser/history/history_utils.cc"  // NOLINT
 #undef CanAddURLToHistory
 
-#include "brave/common/url_constants.h"
+#include "brave/common/brave_url_constants.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

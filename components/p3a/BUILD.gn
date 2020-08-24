@@ -37,6 +37,7 @@ source_set("p3a") {
     "//brave/components/brave_prochlo:prochlo_proto",
     "//brave/components/brave_referrals/common",
     "//brave/vendor/brave_base",
+    "//chrome/common:common",
     "//components/metrics",
     "//components/prefs",
     "//content/public/browser",
