@@ -3,15 +3,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "brave/browser/net/brave_network_delegate_browsertest.h"
+
+#include <string>
 #include "base/path_service.h"
 #include "brave/common/brave_paths.h"
 #include "brave/common/pref_names.h"
 #include "brave/components/brave_shields/browser/brave_shields_util.h"
 #include "brave/components/brave_shields/common/brave_shield_constants.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -24,7 +25,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
-#include "url/gurl.h"
 
 using net::test_server::EmbeddedTestServer;
 
@@ -44,173 +44,136 @@ bool NavigateRenderFrameToURL(content::RenderFrameHost* frame,
   return result;
 }
 
-class BraveNetworkDelegateBrowserTest : public InProcessBrowserTest {
- public:
-  BraveNetworkDelegateBrowserTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+BraveNetworkDelegateBrowserTest::BraveNetworkDelegateBrowserTest()
+    : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
-  void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
+BraveNetworkDelegateBrowserTest::~BraveNetworkDelegateBrowserTest() {}
 
-    host_resolver()->AddRule("*", "127.0.0.1");
+void BraveNetworkDelegateBrowserTest::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
 
-    brave::RegisterPathProvider();
-    base::FilePath test_data_dir;
-    base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir);
+  host_resolver()->AddRule("*", "127.0.0.1");
 
-    https_server_.ServeFilesFromDirectory(test_data_dir);
-    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
-    content::SetupCrossSiteRedirector(&https_server_);
-    ASSERT_TRUE(https_server_.Start());
+  brave::RegisterPathProvider();
+  base::FilePath test_data_dir;
+  base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir);
 
-    url_ = https_server_.GetURL("a.com", "/nested_iframe.html");
-    nested_iframe_script_url_ =
-        https_server_.GetURL("a.com", "/nested_iframe_script.html");
+  https_server_.ServeFilesFromDirectory(test_data_dir);
+  https_server_.AddDefaultHandlers(GetChromeTestDataDir());
+  content::SetupCrossSiteRedirector(&https_server_);
+  ASSERT_TRUE(https_server_.Start());
 
-    top_level_page_url_ = https_server_.GetURL("a.com", "/");
-    https_top_level_page_url_ = https_server_.GetURL("a.com", "/");
+  url_ = https_server_.GetURL("a.com", "/nested_iframe.html");
+  nested_iframe_script_url_ =
+      https_server_.GetURL("a.com", "/nested_iframe_script.html");
 
-    cookie_iframe_url_ =
-        https_server_.GetURL("a.com", "/cookie_iframe.html");
-    https_cookie_iframe_url_ =
-        https_server_.GetURL("a.com", "/cookie_iframe.html");
+  top_level_page_url_ = https_server_.GetURL("a.com", "/");
+  https_top_level_page_url_ = https_server_.GetURL("a.com", "/");
 
-    third_party_cookie_url_ = https_server_.GetURL(
-        "b.com", "/set-cookie?name=bcom;SameSite=None;Secure");
-    first_party_cookie_url_ = https_server_.GetURL(
-        "a.com", "/set-cookie?name=acom;SameSite=None;Secure");
-    subdomain_first_party_cookie_url_ = https_server_.GetURL(
-        "subdomain.a.com",
-        "/set-cookie?name=subdomainacom;SameSite=None;Secure");
+  cookie_iframe_url_ = https_server_.GetURL("a.com", "/cookie_iframe.html");
+  https_cookie_iframe_url_ =
+      https_server_.GetURL("a.com", "/cookie_iframe.html");
 
-    domain_registry_url_ = https_server_.GetURL("mobile.twitter.com",
-                                                        "/cookie_iframe.html");
-    iframe_domain_registry_url_ =
-        https_server_.GetURL("blah.twitter.com",
-                             "/set-cookie?name=blahtwittercom;domain=twitter."
-                             "com;SameSite=None;Secure");
+  third_party_cookie_url_ = https_server_.GetURL(
+      "b.com", "/set-cookie?name=bcom;SameSite=None;Secure");
+  first_party_cookie_url_ = https_server_.GetURL(
+      "a.com", "/set-cookie?name=acom;SameSite=None;Secure");
+  subdomain_first_party_cookie_url_ = https_server_.GetURL(
+      "subdomain.a.com", "/set-cookie?name=subdomainacom;SameSite=None;Secure");
 
-    google_oauth_cookie_url_ = https_server_.GetURL(
-        "accounts.google.com", "/set-cookie?oauth=true;SameSite=None;Secure");
+  domain_registry_url_ =
+      https_server_.GetURL("mobile.twitter.com", "/cookie_iframe.html");
+  iframe_domain_registry_url_ =
+      https_server_.GetURL("blah.twitter.com",
+                           "/set-cookie?name=blahtwittercom;domain=twitter."
+                           "com;SameSite=None;Secure");
 
-    top_level_page_pattern_ =
-        ContentSettingsPattern::FromString("https://a.com/*");
-    first_party_pattern_ =
-        ContentSettingsPattern::FromString("https://firstParty/*");
+  google_oauth_cookie_url_ = https_server_.GetURL(
+      "accounts.google.com", "/set-cookie?oauth=true;SameSite=None;Secure");
 
-    wordpress_top_url_ = https_server_
-        .GetURL("example.wordpress.com", "/cookie_iframe.html");
-    wordpress_frame_url_ = https_server_.GetURL(
-        "example.wordpress.com", "/set-cookie?frame=true;SameSite=None;Secure");
-    wp_top_url_ = https_server_
-        .GetURL("example.wp.com", "/cookie_iframe.html");
-    wp_frame_url_ = https_server_.GetURL(
-        "example.wp.com", "/set-cookie?frame=true;SameSite=None;Secure");
-    a_frame_url_ = https_server_.GetURL(
-        "a.com", "/set-cookie?frame=true;SameSite=None;Secure");
-  }
+  top_level_page_pattern_ =
+      ContentSettingsPattern::FromString("https://a.com/*");
+  first_party_pattern_ =
+      ContentSettingsPattern::FromString("https://firstParty/*");
 
-  HostContentSettingsMap* content_settings() {
-    return HostContentSettingsMapFactory::GetForProfile(browser()->profile());
-  }
+  wordpress_top_url_ =
+      https_server_.GetURL("example.wordpress.com", "/cookie_iframe.html");
+  wordpress_frame_url_ = https_server_.GetURL(
+      "example.wordpress.com", "/set-cookie?frame=true;SameSite=None;Secure");
+  wp_top_url_ = https_server_.GetURL("example.wp.com", "/cookie_iframe.html");
+  wp_frame_url_ = https_server_.GetURL(
+      "example.wp.com", "/set-cookie?frame=true;SameSite=None;Secure");
+  a_frame_url_ = https_server_.GetURL(
+      "a.com", "/set-cookie?frame=true;SameSite=None;Secure");
+}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
+HostContentSettingsMap* BraveNetworkDelegateBrowserTest::content_settings() {
+  return HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+}
 
-    // This is needed to load pages from "domain.com" without an interstitial.
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-  }
+void BraveNetworkDelegateBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  InProcessBrowserTest::SetUpCommandLine(command_line);
 
-  void DefaultBlockAllCookies() {
-    brave_shields::SetCookieControlType(content_settings(),
-                                        brave_shields::ControlType::BLOCK,
-                                        GURL());
-  }
+  // This is needed to load pages from "domain.com" without an interstitial.
+  command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+}
 
-  void DefaultBlockThirdPartyCookies() {
-    brave_shields::SetCookieControlType(
-        content_settings(),
-        brave_shields::ControlType::BLOCK_THIRD_PARTY,
-        GURL());
-  }
+void BraveNetworkDelegateBrowserTest::DefaultBlockAllCookies() {
+  brave_shields::SetCookieControlType(
+      content_settings(), brave_shields::ControlType::BLOCK, GURL());
+}
 
-  void DefaultAllowAllCookies() {
-    brave_shields::SetCookieControlType(content_settings(),
-                                        brave_shields::ControlType::ALLOW,
-                                        GURL());
-  }
+void BraveNetworkDelegateBrowserTest::DefaultBlockThirdPartyCookies() {
+  brave_shields::SetCookieControlType(
+      content_settings(), brave_shields::ControlType::BLOCK_THIRD_PARTY,
+      GURL());
+}
 
-  void AllowCookies(const GURL url) {
-    brave_shields::SetCookieControlType(content_settings(),
-                                        brave_shields::ControlType::ALLOW,
-                                        url);
-  }
+void BraveNetworkDelegateBrowserTest::DefaultAllowAllCookies() {
+  brave_shields::SetCookieControlType(
+      content_settings(), brave_shields::ControlType::ALLOW, GURL());
+}
 
-  void BlockThirdPartyCookies(const GURL url) {
-    brave_shields::SetCookieControlType(
-        content_settings(),
-        brave_shields::ControlType::BLOCK_THIRD_PARTY,
-        url);
-  }
+void BraveNetworkDelegateBrowserTest::AllowCookies(const GURL url) {
+  brave_shields::SetCookieControlType(content_settings(),
+                                      brave_shields::ControlType::ALLOW, url);
+}
 
-  void BlockCookies(const GURL url) {
-    brave_shields::SetCookieControlType(content_settings(),
-                                        brave_shields::ControlType::BLOCK,
-                                        url);
-  }
+void BraveNetworkDelegateBrowserTest::BlockThirdPartyCookies(const GURL url) {
+  brave_shields::SetCookieControlType(
+      content_settings(), brave_shields::ControlType::BLOCK_THIRD_PARTY, url);
+}
 
-  void ShieldsDown(const GURL url) {
-    brave_shields::SetBraveShieldsEnabled(content_settings(),
-                                          false,
-                                          url);
-  }
+void BraveNetworkDelegateBrowserTest::BlockCookies(const GURL url) {
+  brave_shields::SetCookieControlType(content_settings(),
+                                      brave_shields::ControlType::BLOCK, url);
+}
 
-  void NavigateToPageWithFrame(const GURL url) {
-    ui_test_utils::NavigateToURL(browser(), url);
-  }
+void BraveNetworkDelegateBrowserTest::ShieldsDown(const GURL url) {
+  brave_shields::SetBraveShieldsEnabled(content_settings(), false, url);
+}
 
-  void ExpectCookiesOnHost(const GURL url,
-                           const std::string& expected) {
-    EXPECT_EQ(expected, content::GetCookies(browser()->profile(),
-                                            url));
-  }
+void BraveNetworkDelegateBrowserTest::NavigateToPageWithFrame(const GURL url) {
+  ui_test_utils::NavigateToURL(browser(), url);
+}
 
-  void NavigateFrameTo(const GURL url, const std::string& id = "test") {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    EXPECT_TRUE(NavigateIframeToURL(web_contents, id, url));
-  }
+void BraveNetworkDelegateBrowserTest::ExpectCookiesOnHost(
+    const GURL url,
+    const std::string& expected) {
+  EXPECT_EQ(expected, content::GetCookies(browser()->profile(), url));
+}
 
-  void BlockGoogleOAuthCookies() {
-    browser()->profile()->GetPrefs()->SetBoolean(kGoogleLoginControlType,
-                                                 false);
-  }
+void BraveNetworkDelegateBrowserTest::NavigateFrameTo(const GURL url,
+                                                      const std::string& id) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(NavigateIframeToURL(web_contents, id, url));
+}
 
- protected:
-  GURL url_;
-  GURL nested_iframe_script_url_;
-  GURL top_level_page_url_;
-  GURL https_top_level_page_url_;
-  GURL cookie_iframe_url_;
-  GURL https_cookie_iframe_url_;
-  GURL third_party_cookie_url_;
-  GURL first_party_cookie_url_;
-  GURL subdomain_first_party_cookie_url_;
-  GURL domain_registry_url_;
-  GURL iframe_domain_registry_url_;
-  GURL google_oauth_cookie_url_;
-  GURL wordpress_top_url_;
-  GURL wordpress_frame_url_;
-  GURL wp_top_url_;
-  GURL wp_frame_url_;
-  GURL a_frame_url_;
-  net::test_server::EmbeddedTestServer https_server_;
-
- private:
-  ContentSettingsPattern top_level_page_pattern_;
-  ContentSettingsPattern first_party_pattern_;
-  ContentSettingsPattern iframe_pattern_;
-};
+void BraveNetworkDelegateBrowserTest::BlockGoogleOAuthCookies() {
+  browser()->profile()->GetPrefs()->SetBoolean(kGoogleLoginControlType, false);
+}
 
 // It is important that cookies in following tests are set by response headers,
 // not by javascript. Fetching such cookies is controlled by NetworkDelegate.
