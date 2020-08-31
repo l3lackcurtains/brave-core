@@ -9,17 +9,18 @@ import * as gridSitesActions from '../actions/grid_sites_actions'
 import * as binanceActions from '../actions/binance_actions'
 import * as rewardsActions from '../actions/rewards_actions'
 import * as geminiActions from '../actions/gemini_actions'
+import * as cryptoDotComActions from '../actions/cryptoDotCom_actions'
 import store from '../store'
 
 /**
  * Get actions from the C++ back-end down to front-end components
  */
-let actions: typeof newTabActions & typeof gridSitesActions & typeof binanceActions & typeof rewardsActions & typeof geminiActions
+let actions: typeof newTabActions & typeof gridSitesActions & typeof binanceActions & typeof rewardsActions & typeof geminiActions & typeof cryptoDotComActions
 export default function getActions () {
   if (actions) {
     return actions
   }
-  const allActions = Object.assign({}, newTabActions, gridSitesActions, binanceActions, rewardsActions, geminiActions)
+  const allActions = Object.assign({}, newTabActions, gridSitesActions, binanceActions, rewardsActions, geminiActions, cryptoDotComActions)
   actions = bindActionCreators(allActions, store.dispatch.bind(store))
   return actions
 }

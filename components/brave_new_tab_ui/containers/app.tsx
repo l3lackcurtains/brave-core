@@ -64,7 +64,7 @@ const mapStateToProps = (state: NewTab.ApplicationState) => ({
 })
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
-  const allActions = Object.assign({}, newTabActions, gridSitesActions, binanceActions, rewardsActions, geminiActions)
+  const allActions = Object.assign({}, newTabActions, gridSitesActions, binanceActions, rewardsActions, geminiActions, cryptoDotComActions)
   return {
     actions: bindActionCreators(allActions, dispatch)
   }

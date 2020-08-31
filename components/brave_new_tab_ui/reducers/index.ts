@@ -12,6 +12,7 @@ import gridSitesReducer from './grid_sites_reducer'
 import binanceReducer from './binance_reducer'
 import rewardsReducer from './rewards_reducer'
 import geminiReducer from './gemini_reducer'
+import cryptoDotComReducer from './cryptoDotCom_reducer'
 
 export const newTabReducers = (state: NewTab.State | undefined, action: any) => {
   if (state === undefined) {
@@ -23,6 +24,7 @@ export const newTabReducers = (state: NewTab.State | undefined, action: any) => 
   state = binanceReducer(state, action)
   state = rewardsReducer(state, action)
   state = geminiReducer(state, action)
+  state = cryptoDotComReducer(state, action)
 
   if (state !== startingState) {
     storage.debouncedSave(state)
