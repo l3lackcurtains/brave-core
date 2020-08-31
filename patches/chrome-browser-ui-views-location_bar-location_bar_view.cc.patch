@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/location_bar/location_bar_view.cc b/chrome/browser/ui/views/location_bar/location_bar_view.cc
-index 5d2b59f118785cf8265afd0d37d18985f5df8fa6..cf7467edf1e0cdd88599b064b04f52a587ce1805 100644
+index 2576da658078baa1c210e8bc13f34827b316cd1e..b441b00114ab7cafb1cfd48a5df2e7bf19b53c64 100644
 --- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
 +++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
 @@ -461,7 +461,7 @@ void LocationBarView::OnKeywordFaviconFetched(const gfx::Image& icon) {
