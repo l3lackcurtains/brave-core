@@ -28,6 +28,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
 // Ping the update server shortly after startup (units are seconds).
 const int kUpdateServerStartupPingDelay = 3;
@@ -193,10 +194,10 @@ void BraveStatsUpdater::SendServerPing() {
       std::make_unique<brave::BraveStatsUpdaterParams>(pref_service_);
   resource_request->url =
       GetUpdateURL(GURL(g_base_update_url_), *stats_updater_params);
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
-      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-      net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_BYPASS_CACHE |
+                                 net::LOAD_DISABLE_CACHE;
   resource_request->headers.SetHeader("X-Brave-API-Key", brave::GetAPIKey());
   network::mojom::URLLoaderFactory* loader_factory =
       g_browser_process->system_network_context_manager()
