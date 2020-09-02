@@ -32,6 +32,7 @@
 #include "brave/components/brave_shields/common/brave_shield_constants.h"
 #include "brave/components/brave_wallet/browser/buildflags/buildflags.h"
 #include "brave/components/brave_webtorrent/browser/buildflags/buildflags.h"
+#include "brave/components/ephemeral_storage/browser/switches.h"
 #include "brave/components/ipfs/browser/buildflags/buildflags.h"
 #include "brave/components/ipfs/browser/features.h"
 #include "brave/components/services/brave_content_browser_overlay_manifest.h"
@@ -301,6 +302,11 @@ void BraveContentBrowserClient::AppendExtraCommandLineSwitches(
     }
     command_line->AppendSwitchASCII("brave_session_token",
                                     base::NumberToString(session_token));
+
+    // Pass the kEnableEphemeralDomStorage settings to renderer processes.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ephemeral_storage::switches::kEnableEphemeralDomStorage))
+      command_line->AppendSwitch(ephemeral_storage::switches::kEnableEphemeralDomStorage);
   }
 
   if (process_type == switches::kUtilityProcess) {

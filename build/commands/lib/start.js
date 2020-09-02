@@ -75,6 +75,9 @@ const start = (passthroughArgs, buildConfig = config.defaultBuildConfig, options
   if (options.brave_ads_staging) {
     braveArgs.push('--brave-ads-staging')
   }
+  if (options.enable_ephemeral_dom_storage) {
+    braveArgs.push('--enable-ephemeral-dom-storage')
+  }
   braveArgs = braveArgs.concat(passthroughArgs)
 
   let user_data_dir

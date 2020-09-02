@@ -2,6 +2,8 @@ source_set("browser") {
   sources = [
     "ephemeral_storage_tab_helper.cc",
     "ephemeral_storage_tab_helper.h",
+    "switches.cc",
+    "switches.h",
   ]
 
   deps = [

@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "base/command_line.h"
 #include "../../../../../../../third_party/blink/renderer/modules/storage/dom_window_storage.cc"
 #include "third_party/blink/renderer/modules/storage/brave_dom_window_storage.h"
 
@@ -118,8 +119,15 @@ StorageArea* BraveDOMWindowStorage::sessionStorage(
   auto* storage =
       DOMWindowStorage::From(*window).sessionStorage(exception_state);
 
-  if (!window->IsCrossSiteSubframe() || !storage)
+  if (!storage)
     return storage;
+
+  // If this is a third-party subframe and ephemeral storage is enabled, we should
+  // return a special ephemeral version of sessionStorage.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("enable-ephemeral-dom-storage") ||
+    !window->IsCrossSiteSubframe()) {
+    return storage;
+  }
 
   Page* page = window->GetFrame()->GetDocument()->GetPage();
   EphemeralStorageNamespaces* namespaces =
@@ -141,8 +149,15 @@ StorageArea* BraveDOMWindowStorage::localStorage(
   LocalDOMWindow* window = GetSupplementable();
   auto* storage = DOMWindowStorage::From(*window).localStorage(exception_state);
 
-  if (!window->IsCrossSiteSubframe() || !storage)
+  if (!storage)
     return storage;
+
+  // If this is a third-party subframe and ephemeral storage is enabled, we should
+  // return a special ephemeral version of localStorage.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("enable-ephemeral-dom-storage") ||
+    !window->IsCrossSiteSubframe()) {
+    return storage;
+  }
 
   Page* page = window->GetFrame()->GetDocument()->GetPage();
   EphemeralStorageNamespaces* namespaces =

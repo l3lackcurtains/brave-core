@@ -6,6 +6,7 @@
 #include "brave/components/ephemeral_storage/browser/ephemeral_storage_tab_helper.h"
 
 #include <string>
+#include "brave/components/ephemeral_storage/browser/switches.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -45,6 +46,9 @@ void EphemeralStorageTabHelper::WebContentsDestroyed() {
 }
 
 void EphemeralStorageTabHelper::ClearEphemeralStorage() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableEphemeralDomStorage))
+      return;
+
   WebContents* contents = web_contents();
   BrowserContext* browser_context = contents->GetBrowserContext();
   SiteInstance* site_instance = contents->GetSiteInstance();

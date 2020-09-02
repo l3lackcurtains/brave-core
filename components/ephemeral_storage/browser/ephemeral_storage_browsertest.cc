@@ -4,6 +4,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "brave/browser/net/brave_network_delegate_browsertest.h"
+#include "brave/components/ephemeral_storage/browser/switches.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
@@ -65,6 +66,11 @@ class EphemeralStorageBrowserTest : public BraveNetworkDelegateBrowserTest {
     ephemeral_storage_url_ =
         https_server_.GetURL("a.com", "/ephemeral_storage.html");
     simple_url_ = https_server_.GetURL("a.com", "/simple.html");
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    BraveNetworkDelegateBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(ephemeral_storage::switches::kEnableEphemeralDomStorage);
   }
 
  protected:

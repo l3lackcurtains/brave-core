@@ -5,6 +5,7 @@
 
 #include "components/content_settings/core/common/cookie_settings_base.h"
 
+#include "base/command_line.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -37,7 +38,6 @@ bool BraveIsAllowedThirdParty(
     const GURL& url,
     const GURL& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin) {
-  return true;
   static const base::NoDestructor<
       // url -> first_party_url allow map
       std::vector<std::pair<ContentSettingsPattern,
@@ -119,6 +119,11 @@ bool BraveIsAllowedThirdParty(
     if (i->first.Matches(url) && i->second.Matches(first_party_url))
       return true;
   }
+
+  // If ephemeral storage is activated, we allow access to ephemeral
+  // storage for third-parties.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("enable-ephemeral-dom-storage"))
+    return true;
 
   return false;
 }
