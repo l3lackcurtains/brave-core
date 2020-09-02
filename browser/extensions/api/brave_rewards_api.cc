@@ -94,6 +94,7 @@ BraveRewardsUpdateMediaDurationFunction::Run() {
   }
 
   rewards_service->UpdateMediaDuration(
+      params->window_id,
       params->publisher_key,
       params->duration);
 
