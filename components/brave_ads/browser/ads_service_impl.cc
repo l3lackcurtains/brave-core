@@ -24,6 +24,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
+#include "base/i18n/time_formatting.h"
 #include "bat/ads/ad_history.h"
 #include "bat/ads/ads.h"
 #include "bat/ads/ads_history.h"
@@ -37,15 +38,15 @@
 #include "brave/components/brave_ads/browser/ad_notification.h"
 #include "brave/components/brave_ads/browser/ads_notification_handler.h"
 #include "brave/components/brave_ads/browser/ads_p2a.h"
+#include "brave/components/brave_ads/common/pref_names.h"
 #include "brave/components/brave_ads/common/switches.h"
 #include "brave/components/brave_rewards/browser/rewards_notification_service.h"
 #include "brave/components/brave_rewards/browser/rewards_p3a.h"
 #include "brave/components/brave_rewards/browser/rewards_service.h"
-#include "brave/components/brave_rewards/common/pref_names.h"
 #include "brave/components/l10n/browser/locale_helper.h"
 #include "brave/components/l10n/common/locale_util.h"
 #include "brave/browser/brave_rewards/rewards_service_factory.h"
-#include "brave/components/brave_ads/common/pref_names.h"
+#include "brave/components/brave_rewards/common/pref_names.h"
 #include "brave/components/services/bat_ads/public/cpp/ads_client_mojo_bridge.h"
 #include "brave/components/services/bat_ads/public/interfaces/bat_ads.mojom.h"
 #include "brave/components/brave_ads/browser/notification_helper.h"
@@ -54,6 +55,11 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#if !defined(OS_ANDROID)
+#include "brave/ui/brave_custom_notification/message_popup_view.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#endif
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/common/buildflags.h"
@@ -78,12 +84,6 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "content/public/browser/page_navigator.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "brave/ui/brave_custom_notification/message_popup_view.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #endif
 
 using brave_rewards::RewardsNotificationService;
