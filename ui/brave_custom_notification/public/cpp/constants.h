@@ -57,7 +57,7 @@ const int kMessageLineHeight = 18;    // In DIPs.
 
 // Colors.
 // Background of the card.
-constexpr SkColor kNotificationBackgroundColor = SK_ColorLTGRAY;
+constexpr SkColor kNotificationBackgroundColor = SkColorSetRGB(0xED, 0xF0, 0xF2);
 // Background of the image.
 constexpr SkColor kImageBackgroundColor = kNotificationBackgroundColor;
 // Title, message, ...
