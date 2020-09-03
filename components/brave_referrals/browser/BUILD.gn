@@ -5,9 +5,7 @@ declare_args() {
 }
 
 source_set("browser") {
-  public_deps = [
-    "//brave/components/brave_referrals/buildflags",
-  ]
+  public_deps = [ "//brave/components/brave_referrals/buildflags" ]
 
   if (enable_brave_referrals) {
     sources = [
@@ -20,13 +18,13 @@ source_set("browser") {
     deps = [
       "//base",
       "//brave/common",
+      "//brave/components/private_channel",
       "//brave/vendor/brave_base",
       "//chrome/common",
       "//components/prefs",
       "//content/public/browser",
       "//net",
       "//services/network/public/cpp",
-      "//brave/components/private_channel",
     ]
   }
 }

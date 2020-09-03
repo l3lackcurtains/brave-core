@@ -20,6 +20,8 @@
 #include "base/values.h"
 #include "brave/common/network_constants.h"
 #include "brave/common/pref_names.h"
+#include "brave/components/brave_referrals/browser/brave_referrals_service.h"
+#include "brave/components/private_channel/browser/private_channel.h"
 #include "brave_base/random.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -29,8 +31,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "brave/components/brave_referrals/browser/brave_referrals_service.h"
-#include "brave/components/private_channel/browser/private_channel_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
@@ -62,8 +62,6 @@ const int kMaxReferralServerResponseSizeBytes = 1024 * 1024;
 // Default promo code, used when no promoCode file exists on first
 // run.
 const char kDefaultPromoCode[] = "BRV001";
-
-using namespace brave_private_channel;  // NOLINT 
 
 namespace {
 
@@ -130,7 +128,8 @@ void BraveReferralsService::Start() {
   GetFirstRunTime();
 
   // TODO(@gpestana): check better trigger for private channels protocol
-  PrivateChannel* pc = new PrivateChannel(promo_code_);
+  private_channel::PrivateChannel* pc =
+      new private_channel::PrivateChannel(promo_code_);
   pc->PerformReferralAttestation();
 
   // Periodically perform finalization checks.
