@@ -5,9 +5,9 @@
 
 #include "brave/components/brave_ads/browser/ad_notification.h"
 
-#include "bat/ads/ad_notification_info.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "bat/ads/ad_notification_info.h"
 #include "brave/ui/brave_custom_notification/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -16,6 +16,7 @@
 namespace brave_ads {
 
 #if defined(OS_ANDROID)
+// TODO(yachtcaptain23): Refactoring this away to not use message_center
 
 namespace {
 const char kNotifierId[] = "service.ads_service";
@@ -53,9 +54,9 @@ std::unique_ptr<message_center::Notification> CreateMessageCenterAdNotification(
 
   return notification;
 }
-#endif
 
-#if !defined(OS_ANDROID)
+#else
+
 // static
 std::unique_ptr<brave_custom_notification::Notification> CreateAdNotification(
     const ads::AdNotificationInfo& info) {
