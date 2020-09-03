@@ -23,15 +23,19 @@
 
 namespace {
 
-class PassThroughDelegate : public brave_custom_notification::NotificationDelegate {
+class PassThroughDelegate
+    : public brave_custom_notification::NotificationDelegate {
  public:
-  PassThroughDelegate(Profile* profile,
-                      const brave_custom_notification::Notification& notification)
+  PassThroughDelegate(
+      Profile* profile,
+      const brave_custom_notification::Notification& notification)
       : profile_(profile),
         notification_(notification) {}
 
   void Close(bool by_user) override {
-    std::unique_ptr<brave_ads::AdsNotificationHandler> handler = std::make_unique<brave_ads::AdsNotificationHandler>(static_cast<content::BrowserContext*>(profile_));
+    std::unique_ptr<brave_ads::AdsNotificationHandler> handler =
+        std::make_unique<brave_ads::AdsNotificationHandler>(
+            static_cast<content::BrowserContext*>(profile_));
     handler->SetAdsService(static_cast<brave_ads::AdsServiceImpl*>(brave_ads::AdsServiceFactory::GetForProfile(profile_)));
     handler->OnClose(profile_, notification_.origin_url(), notification_.id(), by_user, base::OnceClosure());
   }
@@ -64,7 +68,7 @@ NotificationPlatformBridgeBraveCustomNotification::
 
 void NotificationPlatformBridgeBraveCustomNotification::Display(
     Profile* profile,
-    brave_custom_notification::Notification& notification) {
+    const brave_custom_notification::Notification& notification) {
   DCHECK_EQ(profile, profile_);
 
   // If there's no delegate, replace it with a PassThroughDelegate so clicks

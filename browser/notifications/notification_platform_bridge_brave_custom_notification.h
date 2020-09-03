@@ -18,7 +18,7 @@ class NotificationPlatformBridgeBraveCustomNotification {
   ~NotificationPlatformBridgeBraveCustomNotification();
 
   void Display(Profile* profile,
-               brave_custom_notification::Notification& notification);
+               const brave_custom_notification::Notification& notification);
   void Close(Profile* profile, const std::string& notification_id);
 
  private:
