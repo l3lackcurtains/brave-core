@@ -77,29 +77,18 @@ constexpr gfx::Insets kLeftContentPaddingWithIcon(2, 4, 0, 12);
 constexpr SkColor kInlineSettingsBackgroundColor =
     SkColorSetRGB(0xEE, 0xEE, 0xEE);
 
-// Max number of lines for title_view_.
-constexpr int kMaxLinesForTitleView = 1;
 // Max number of lines for message_view_.
 constexpr int kMaxLinesForNotificationView = 1;
 constexpr int kMaxLinesForExpandedNotificationView = 4;
-
-// constexpr int kCompactTitleNotificationViewSpacing = 12;
-
-// constexpr int kProgressBarHeight = 4;
 
 constexpr int kNotificationViewWidthWithIcon =
     kNotificationWidth - kIconViewSize.width() -
     kLeftContentPaddingWithIcon.left() - kLeftContentPaddingWithIcon.right() -
     kContentRowPadding.left() - kContentRowPadding.right();
 
-const int kMinPixelsPerTitleCharacterMD = 4;
-
 // Character limit = pixels per line * line limit / min. pixels per character.
 constexpr size_t kMessageCharacterLimitMD =
     kNotificationWidth * kMessageExpandedLineLimit / 3;
-
-// The default is 12, so this normally come out to 13.
-constexpr int kTextFontSizeDelta = 1;
 
 constexpr int kBodyTextFontSize = 13;
 
@@ -111,15 +100,7 @@ gfx::FontList GetTextFontList() {
   gfx::Font default_font;
   int font_size_delta = kBodyTextFontSize - default_font.GetFontSize();
   gfx::Font font = default_font.Derive(font_size_delta, gfx::Font::NORMAL,
-                                       gfx::Font::Weight::LIGHT);
-  return gfx::FontList(font);
-}
-
-// FontList for the texts except for the header.
-gfx::FontList GetTitleFontList() {
-  gfx::Font default_font;
-  gfx::Font font = default_font.Derive(kTextFontSizeDelta, gfx::Font::NORMAL,
-                                       gfx::Font::Weight::MEDIUM);
+                                       gfx::Font::Weight::NORMAL);
   return gfx::FontList(font);
 }
 
@@ -202,10 +183,25 @@ void AdNotificationViewMD::CreateOrUpdateViews(const Notification& notification)
   left_content_count_ = 0;
 
   CreateOrUpdateContextTitleView(notification);
-//  CreateOrUpdateTitleView(notification);
   CreateOrUpdateNotificationView(notification);
-//  CreateOrUpdateSmallIconView(notification);
-  UpdateViewForExpandedState(expanded_);
+  if (message_view_) {
+    message_view_->SetMaxLines(kMaxLinesForExpandedNotificationView);
+  }
+
+  right_content_->SetVisible(true);
+  left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
+
+  // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
+  // the width.
+  // Ideally, we should fix the original bug, but it seems there's no obvious
+  // solution for the bug according to https://crbug.com/678337#c7, we should
+  // ensure that the change won't break any of the users of BoxLayout class.
+  const int message_view_width = kNotificationViewWidthWithIcon -
+      GetInsets().width();
+  if (message_view_)
+    message_view_->SizeToFit(message_view_width);
+
+  content_row_->InvalidateLayout();
 }
 
 AdNotificationViewMD::AdNotificationViewMD(const Notification& notification)
@@ -349,13 +345,10 @@ void AdNotificationViewMD::OnMouseReleased(const ui::MouseEvent& event) {
   }
 
   // Ignore click of actions row outside action buttons.
-  if (expanded_) {
-    DCHECK(actions_row_);
-    gfx::Point point_in_child = event.location();
-    ConvertPointToTarget(this, actions_row_, &point_in_child);
-    if (actions_row_->HitTestPoint(point_in_child))
-      return;
-  }
+  gfx::Point point_in_child = event.location();
+  ConvertPointToTarget(this, actions_row_, &point_in_child);
+  if (actions_row_->HitTestPoint(point_in_child))
+    return;
 
   // Ignore clicks of outside region when inline settings is shown.
   if (settings_row_ && settings_row_->GetVisible())
@@ -409,71 +402,14 @@ void AdNotificationViewMD::UpdateControlButtonsVisibilityWithNotification(
 }
 
 void AdNotificationViewMD::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {
-  // Tapping anywhere on |header_row_| can expand the notification, though only
-  // |expand_button| can be focused by TAB.
-  if (sender == header_row_) {
-    if (IsExpandable() && content_row_->GetVisible()) {
-      auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
-      // Check |this| is valid before continuing, because ToggleExpanded() might
-      // cause |this| to be deleted.
-      if (!weak_ptr)
-        return;
-      Layout();
-      SchedulePaint();
-    }
-    return;
-  }
-}
+                                       const ui::Event& event) {}
 
 void AdNotificationViewMD::CreateOrUpdateContextTitleView(
     const Notification& notification) {
   header_row_->SetAccentColor(SK_ColorTRANSPARENT);
   header_row_->SetBackgroundColor(kNotificationBackgroundColor);
   header_row_->SetAdNameElideBehavior(gfx::ELIDE_TAIL);
-
-  base::string16 app_name;
-  if (notification.UseOriginAsContextMessage()) {
-    app_name = url_formatter::FormatUrlForSecurityDisplay(
-        notification.origin_url(),
-        url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
-    header_row_->SetAdNameElideBehavior(gfx::ELIDE_HEAD);
-  } else if (!notification.context_message().empty()) {
-    app_name = notification.context_message();
-  } else {
-    app_name = notification.display_source();
-  }
   header_row_->SetAdName(notification.title());
-}
-
-void AdNotificationViewMD::CreateOrUpdateTitleView(
-    const Notification& notification) {
-  int title_character_limit =
-      kNotificationWidth * kMaxTitleLines / kMinPixelsPerTitleCharacterMD;
-
-  base::string16 title = gfx::TruncateString(
-      notification.title(), title_character_limit, gfx::WORD_BREAK);
-  if (!title_view_) {
-    const gfx::FontList& font_list = GetTitleFontList();
-
-    title_view_ = new views::Label(title);
-    title_view_->SetFontList(font_list);
-    title_view_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-    title_view_->SetEnabledColor(kRegularTextColorMD);
-    title_view_->SetBackgroundColor(kNotificationBackgroundColor);
-    title_view_->SetLineHeight(kLineHeightMD);
-    // TODO(knollr): multiline should not be required, but we need to set the
-    // width of |title_view_| (because of crbug.com/682266), which only works in
-    // multiline mode.
-    title_view_->SetMultiLine(true);
-    title_view_->SetMaxLines(kMaxLinesForTitleView);
-    title_view_->SetAllowCharacterBreak(true);
-    left_content_->AddChildViewAt(title_view_, left_content_count_);
-  } else {
-    title_view_->SetText(title);
-  }
-
-  left_content_count_++;
 }
 
 void AdNotificationViewMD::CreateOrUpdateNotificationView(
@@ -503,61 +439,6 @@ void AdNotificationViewMD::CreateOrUpdateNotificationView(
   left_content_count_++;
 }
 
-void AdNotificationViewMD::CreateOrUpdateSmallIconView(
-    const Notification& notification) {
-  // TODO(knollr): figure out if this has a performance impact and
-  // cache images if so. (crbug.com/768748)
-  /*
-  gfx::Image masked_small_icon =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_BRAVE_ADS_LOGO_64);
-
-  if (masked_small_icon.IsEmpty()) {
-    header_row_->ClearAppIcon();
-  } else {
-    header_row_->SetAppIcon(masked_small_icon.AsImageSkia());
-  }
-  */
-}
-
-bool AdNotificationViewMD::IsExpandable() {
-  return false;
-}
-
-void AdNotificationViewMD::UpdateViewForExpandedState(bool expanded) {
-  if (message_view_) {
-    message_view_->SetMaxLines(expanded ? kMaxLinesForExpandedNotificationView
-                                        : kMaxLinesForNotificationView);
-  }
-
-  for (size_t i = kMaxLinesForNotificationView; i < item_views_.size(); ++i) {
-    item_views_[i]->SetVisible(expanded);
-  }
-  if (status_view_)
-    status_view_->SetVisible(expanded);
-
-  int max_items = expanded ? item_views_.size() : kMaxLinesForNotificationView;
-  if (list_items_count_ > max_items)
-    header_row_->SetOverflowIndicator(list_items_count_ - max_items);
-
-  right_content_->SetVisible(true);
-  left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
-
-  // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
-  // the width.
-  // Ideally, we should fix the original bug, but it seems there's no obvious
-  // solution for the bug according to https://crbug.com/678337#c7, we should
-  // ensure that the change won't break any of the users of BoxLayout class.
-  const int message_view_width = kNotificationViewWidthWithIcon -
-      GetInsets().width();
-  if (title_view_)
-    title_view_->SizeToFit(message_view_width);
-  if (message_view_)
-    message_view_->SizeToFit(message_view_width);
-
-  content_row_->InvalidateLayout();
-}
-
 void AdNotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
   if (!settings_row_)
     return;
@@ -569,21 +450,6 @@ void AdNotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
   header_row_->SetBackgroundColor(inline_settings_visible
                                       ? kInlineSettingsBackgroundColor
                                       : kNotificationBackgroundColor);
-
-  // Always check "Don't block" when inline settings is shown.
-  // If it's already blocked, users should not see inline settings.
-  // Toggling should reset the state.
-  dont_block_button_->SetChecked(true);
-
-  // SetSettingMode(inline_settings_visible);
-
-  // Grab a weak pointer before calling SetExpanded() as it might cause |this|
-  // to be deleted.
-  {
-    auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
-    if (!weak_ptr)
-      return;
-  }
 
   PreferredSizeChanged();
 
@@ -658,8 +524,7 @@ std::unique_ptr<views::InkDropRipple> AdNotificationViewMD::CreateInkDropRipple(
 
 std::vector<views::View*> AdNotificationViewMD::GetChildrenForLayerAdjustment()
     const {
-  return {header_row_, block_all_button_, dont_block_button_,
-          settings_done_button_};
+  return {header_row_};
 }
 
 std::unique_ptr<views::InkDropMask> AdNotificationViewMD::CreateInkDropMask()

@@ -49,7 +49,6 @@ class AdNotificationViewMD
   void AddBackgroundAnimation(const ui::Event& event);
   void RemoveBackgroundAnimation();
 
-  // NotificationView:
   void AddLayerBeneathView(ui::Layer* layer) override;
   void RemoveLayerBeneathView(ui::Layer* layer) override;
   void Layout() override;
@@ -81,19 +80,9 @@ class AdNotificationViewMD
   void CreateOrUpdateViews(const Notification& notification);
 
   void CreateOrUpdateContextTitleView(const Notification& notification);
-  void CreateOrUpdateTitleView(const Notification& notification);
   void CreateOrUpdateNotificationView(const Notification& notification);
-  void CreateOrUpdateProgressBarView(const Notification& notification);
-  void CreateOrUpdateProgressStatusView(const Notification& notification);
-  void CreateOrUpdateListItemViews(const Notification& notification);
-  void CreateOrUpdateIconView(const Notification& notification);
-  void CreateOrUpdateSmallIconView(const Notification& notification);
-  void CreateOrUpdateImageView(const Notification& notification);
   void CreateOrUpdateActionButtonViews(const Notification& notification);
 
-  bool IsExpandable();
-  void ToggleExpanded();
-  void UpdateViewForExpandedState(bool expanded);
   void ToggleInlineSettings(const ui::Event& event);
 
   // Returns the list of children which need to have their layers created or
@@ -104,19 +93,6 @@ class AdNotificationViewMD
 
   // View containing close and settings buttons
   std::unique_ptr<NotificationControlButtonsView> control_buttons_view_;
-
-  // Whether this notification is expanded or not.
-  bool expanded_ = true;
-
-  // True if the notification is expanded/collapsed by user interaction.
-  // If true, MessagePopupCollection will not auto-collapse the notification.
-  bool manually_expanded_or_collapsed_ = true;
-
-  // Whether hiding icon on the right side when expanded.
-  bool hide_icon_on_expanded_ = false;
-
-  // Number of total list items in the given Notification class.
-  int list_items_count_ = 0;
 
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
@@ -132,22 +108,12 @@ class AdNotificationViewMD
   views::View* right_content_ = nullptr;
 
   // Views which are dynamically created inside view hierarchy.
-  views::Label* title_view_ = nullptr;
   views::Label* message_view_ = nullptr;
-  views::Label* status_view_ = nullptr;
-  views::View* image_container_view_ = nullptr;
-  std::vector<views::View*> item_views_;
-  views::ProgressBar* progress_bar_view_ = nullptr;
   views::View* action_buttons_row_ = nullptr;
 
   // Counter for view layouting, which is used during the CreateOrUpdate*
   // phases to keep track of the view ordering. See crbug.com/901045
   int left_content_count_;
-
-  // Views for inline settings.
-  views::RadioButton* block_all_button_ = nullptr;
-  views::RadioButton* dont_block_button_ = nullptr;
-  views::LabelButton* settings_done_button_ = nullptr;
 
   // Owned by views properties. Guaranteed to be not null for the lifetime of
   // |this| because views properties are the last thing cleaned up.
