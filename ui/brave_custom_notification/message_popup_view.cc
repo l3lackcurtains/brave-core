@@ -4,6 +4,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "brave/ui/brave_custom_notification/message_popup_view.h"
+
 #include "brave/ui/brave_custom_notification/notification_view.h"
 #include "brave/ui/brave_custom_notification/notification_view_factory.h"
 #include "brave/ui/brave_custom_notification/public/cpp/constants.h"
