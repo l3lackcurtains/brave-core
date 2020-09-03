@@ -30,7 +30,7 @@ const char NotificationControlButtonsView::kViewClassName[] =
 
 NotificationControlButtonsView::NotificationControlButtonsView(
     NotificationView* message_view)
-    : message_view_(message_view), icon_color_(gfx::kChromeIconGrey) {
+    : message_view_(message_view) {
   DCHECK(message_view);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal));
@@ -93,18 +93,6 @@ void NotificationControlButtonsView::ShowButtons(bool show) {
 
 bool NotificationControlButtonsView::IsAnyButtonFocused() const {
   return (close_button_ && close_button_->HasFocus());
-}
-
-void NotificationControlButtonsView::SetButtonIconColors(SkColor color) {
-  if (color == icon_color_)
-    return;
-  icon_color_ = color;
-
-  if (close_button_) {
-    close_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kBraveAdsCloseButtonIcon, icon_color_));
-  }
 }
 
 views::Button* NotificationControlButtonsView::close_button() const {

@@ -46,9 +46,6 @@ class NotificationControlButtonsView
   // false otherwise.
   bool IsAnyButtonFocused() const;
 
-  // Sets the icon color for the close, settings, and snooze buttons.
-  void SetButtonIconColors(SkColor color);
-
   // Methods for retrieving the control buttons directly.
   views::Button* close_button() const;
   views::Button* info_button() const;
@@ -64,9 +61,6 @@ class NotificationControlButtonsView
 
   std::unique_ptr<PaddedButton> close_button_;
   std::unique_ptr<PaddedButton> info_button_;
-
-  // The color used for the close, settings, and snooze icons.
-  SkColor icon_color_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationControlButtonsView);
 };
