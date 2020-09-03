@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "private_channel.h"
+#include "private_channel.h"  // NOLINT
 
 #define KEY_SIZE 32
 

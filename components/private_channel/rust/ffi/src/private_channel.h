@@ -10,44 +10,46 @@
 #include <vector>
 
 extern "C" {
-#include "lib.h"
+#include "brave/components/private_channel/rust/ffi/src/lib.h"
 }
 
 namespace private_channel {
 
-  typedef struct {
-    const uint8_t *pkeys_ptr;
-    uintptr_t pkeys_byte_size;
-    const uint8_t *skeys_ptr;
-    uintptr_t skeys_byte_size;
-    const uint8_t *shared_pubkey_ptr;
-    uintptr_t shared_pkeys_byte_size;
-    const uint8_t *encrypted_hashes_ptr;
-    uintptr_t encrypted_hashes_size;
-    uintptr_t key_size;
-    bool error;
-  } ResultChallenge;
+typedef struct {
+  const uint8_t* pkeys_ptr;
+  uintptr_t pkeys_byte_size;
+  const uint8_t* skeys_ptr;
+  uintptr_t skeys_byte_size;
+  const uint8_t* shared_pubkey_ptr;
+  uintptr_t shared_pkeys_byte_size;
+  const uint8_t* encrypted_hashes_ptr;
+  uintptr_t encrypted_hashes_size;
+  uintptr_t key_size;
+  bool error;
+} ResultChallenge;
 
-  typedef struct {
-    const uint8_t *encoded_partial_dec_ptr;
-    uintptr_t encoded_partial_dec_size;
-    const uint8_t *encoded_proofs_ptr;
-    uintptr_t encoded_proofs_size;
-    const uint8_t *random_vec_ptr;
-    uintptr_t random_vec_size;
-    bool error;
-  } ResultSecondRound;
+typedef struct {
+  const uint8_t* encoded_partial_dec_ptr;
+  uintptr_t encoded_partial_dec_size;
+  const uint8_t* encoded_proofs_ptr;
+  uintptr_t encoded_proofs_size;
+  const uint8_t* random_vec_ptr;
+  uintptr_t random_vec_size;
+  bool error;
+} ResultSecondRound;
 
-  ResultChallenge start_challenge(
-    const char* const* input_ptr, int size, const char* server_pk);
-	
- ResultSecondRound second_round(
-   const char* enc_input_ptr, int size, const char* sk);
+ResultChallenge start_challenge(const char* const* input_ptr,
+                                int size,
+                                const char* server_pk);
 
-  void free_first_round_result(ResultChallenge result);
+ResultSecondRound second_round(const char* enc_input_ptr,
+                               int size,
+                               const char* sk);
 
-  void free_second_round_result(ResultSecondRound result);
+void free_first_round_result(ResultChallenge result);
 
-}
+void free_second_round_result(ResultSecondRound result);
 
-#endif	// BRAVE_COMPONENTS_PRIVATE_CHANNEL_RUST_FFI_SRC_PRIVATE_CHANNEL_H_
+}  // namespace private_channel
+
+#endif  // BRAVE_COMPONENTS_PRIVATE_CHANNEL_RUST_FFI_SRC_PRIVATE_CHANNEL_H_

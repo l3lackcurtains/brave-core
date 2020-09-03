@@ -34,8 +34,8 @@ void PrivateChannel::PerformReferralAttestation() {
 void PrivateChannel::FetchMetadataPrivateChannelServer() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->method = "GET";
-  resource_request->url =
-      GURL(request_utils::BuildUrl(request_utils::EndpointType::META, PRIVATE_CHANNEL_API_VERSION));
+  resource_request->url = GURL(request_utils::BuildUrl(
+      request_utils::EndpointType::META, PRIVATE_CHANNEL_API_VERSION));
   resource_request->headers.SetHeader("Content-Type",
                                       "application/x-www-form-urlencoded");
   resource_request->load_flags =
@@ -124,9 +124,6 @@ void PrivateChannel::FirstRoundProtocol(const char* server_pk) {
     return;
   }
 
-  // TODO: REMOVE!!!
-  referral_code_ = "referral_client_mock";
-
   const std::string payload = base::StringPrintf(
       "pk_vector=%s&th_key_vector=%s&enc_signals=%s&client_id=%s",
       request_artefacts.client_pks.c_str(),
@@ -135,8 +132,8 @@ void PrivateChannel::FirstRoundProtocol(const char* server_pk) {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->method = "POST";
-  resource_request->url =
-      GURL(request_utils::BuildUrl(request_utils::EndpointType::FIRST_ROUND, PRIVATE_CHANNEL_API_VERSION));
+  resource_request->url = GURL(request_utils::BuildUrl(
+      request_utils::EndpointType::FIRST_ROUND, PRIVATE_CHANNEL_API_VERSION));
   std::string content_type = "application/x-www-form-urlencoded";
   resource_request->headers.SetHeader("Content-Type", content_type);
   resource_request->load_flags =
@@ -203,8 +200,8 @@ void PrivateChannel::OnPrivateChannelFirstRoundLoadComplete(
     return;
   }
 
-  SecondRoundProtocol(safe_response_body.c_str(), client_sks, id,
-                            encrypted_hashes_size);
+  SecondRoundProtocol(safe_response_body, client_sks, id,
+                      encrypted_hashes_size);
 }
 
 void PrivateChannel::SecondRoundProtocol(const std::string& encrypted_input,
@@ -227,8 +224,8 @@ void PrivateChannel::SecondRoundProtocol(const std::string& encrypted_input,
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->method = "POST";
-  resource_request->url =
-      GURL(request_utils::BuildUrl(request_utils::EndpointType::SECOND_ROUND, PRIVATE_CHANNEL_API_VERSION));
+  resource_request->url = GURL(request_utils::BuildUrl(
+      request_utils::EndpointType::SECOND_ROUND, PRIVATE_CHANNEL_API_VERSION));
   std::string content_type = "application/x-www-form-urlencoded";
   resource_request->headers.SetHeader("Content-Type", content_type);
   resource_request->load_flags =
@@ -273,7 +270,7 @@ void PrivateChannel::SecondRoundProtocol(const std::string& encrypted_input,
 
 void PrivateChannel::OnPrivateChannelSecondRoundLoadComplete(
     std::unique_ptr<std::string> response_body) {
-  int response_code = -1; 
+  int response_code = -1;
   if (http_loader_->ResponseInfo() && http_loader_->ResponseInfo()->headers)
     response_code = http_loader_->ResponseInfo()->headers->response_code();
 
