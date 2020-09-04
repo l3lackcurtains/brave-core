@@ -29,7 +29,7 @@ function onRewardsToggled (prefData: preferencesAPI.Preferences): void {
 }
 
 async function onMostVisitedInfoChanged (topSites: any) {
-  getActions().gridSitesDataUpdated(topSites.tiles)
+  getActions().tilesUpdated(topSites.tiles)
 }
 
 // Not marked as async so we don't return a promise
@@ -43,7 +43,6 @@ export function wireApiEventsToStore () {
     }
     binanceInitData()
     getActions().setInitialData(initialData)
-    getActions().setFirstRenderGridSitesData(initialData)
     // Listen for API changes and dispatch to store
     topSitesAPI.addMostVistedInfoChangedListener(onMostVisitedInfoChanged)
     statsAPI.addChangeListener(updateStats)

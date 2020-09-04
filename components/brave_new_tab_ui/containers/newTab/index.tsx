@@ -23,7 +23,6 @@ import BrandedWallpaperLogo from '../../components/default/brandedWallpaper/logo
 
 // Helpers
 import VisibilityTimer from '../../helpers/visibilityTimer'
-import arrayMove from 'array-move'
 import { generateQRData } from '../../binance-utils'
 
 // Types
@@ -107,7 +106,7 @@ class NewTabPage extends React.Component<Props, State> {
 
   componentDidMount () {
     // if a notification is open at component mounting time, close it
-    this.props.actions.showGridSiteRemovedNotification(false)
+    this.props.actions.showTilesRemovedNotice(false)
     this.imageSource = GetBackgroundImageSrc(this.props)
     this.trackCachedImage()
     if (GetShouldShowBrandedWallpaperNotification(this.props)) {
@@ -191,12 +190,13 @@ class NewTabPage extends React.Component<Props, State> {
     const { gridSitesData } = this.props
     // Do not update topsites order if the drag
     // destination is a pinned tile
-    const gridSite = gridSitesData.gridSites[newIndex]
-    if (!gridSite) {
-      return
-    }
-    const items = arrayMove(gridSitesData.gridSites, oldIndex, newIndex)
-    this.props.actions.gridSitesDataUpdated(items)
+    console.log('BSC]] FIX ME - SHOULDNT BE HAPPENING')
+    // const gridSite = gridSitesData.gridSites[newIndex]
+    // if (!gridSite) {
+    //   return
+    // }
+    // const items = arrayMove(gridSitesData.gridSites, oldIndex, newIndex)
+    this.props.actions.tilesUpdated(gridSitesData.gridSites)
   }
 
   toggleShowBackgroundImage = () => {
