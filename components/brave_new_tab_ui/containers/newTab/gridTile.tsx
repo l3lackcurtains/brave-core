@@ -48,6 +48,9 @@ class TopSite extends React.PureComponent<Props, {}> {
         title={siteData.title}
         tabIndex={0}
         style={{
+          // TODO(bsclifton): consider not allowing movement if on most visited
+          // Visually inform users that dragging a pinned site is not allowed.
+          // cursor: isGridSitePinned(siteData) ? 'not-allowed' : 'grab'
           cursor: 'grab'
         }}
       >

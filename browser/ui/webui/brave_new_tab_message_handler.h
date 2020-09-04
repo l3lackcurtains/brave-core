@@ -50,6 +50,7 @@ class BraveNewTabMessageHandler : public content::WebUIMessageHandler,
   void HandleDeleteMostVisitedTile(const base::ListValue* args);
   void HandleReorderMostVisitedTile(const base::ListValue* args);
   void HandleRestoreMostVisitedDefaults(const base::ListValue* args);
+  void HandleUndoMostVisitedTileAction(const base::ListValue* args);
 
   void OnStatsChanged();
   void OnPreferencesChanged();

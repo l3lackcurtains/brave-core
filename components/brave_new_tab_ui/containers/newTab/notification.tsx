@@ -19,7 +19,8 @@ import { CloseStrokeIcon } from 'brave-ui/components/icons'
 import { getLocale } from '../../../common/locale'
 
 import {
-  restoreMostVisitedDefaults
+  restoreMostVisitedDefaults,
+  undoMostVisitedTileAction
 } from '../../api/topSites'
 
 // Types
@@ -37,8 +38,7 @@ export default class Notification extends React.Component<Props, {}> {
   }
 
   onUndoRemoveTopSite = () => {
-    // TODO(bsclifton): finish me
-    // this.props.actions.undoRemoveGridSite()
+    undoMostVisitedTileAction()
     this.props.actions.showTilesRemovedNotice(false)
   }
 

@@ -27,7 +27,10 @@ export function restoreMostVisitedDefaults (): void {
   chrome.send('restoreMostVisitedDefaults', [])
 }
 
-// TODO(bsclifton): how does instant service generate image?
+export function undoMostVisitedTileAction (): void {
+  chrome.send('undoMostVisitedTileAction', [])
+}
+
 export function generateGridSiteFavicon (url: string): string {
   return `chrome://favicon/size/64@1x/${url}`
 }

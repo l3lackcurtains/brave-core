@@ -228,6 +228,11 @@ void BraveNewTabMessageHandler::RegisterMessages() {
     base::BindRepeating(
       &BraveNewTabMessageHandler::HandleRestoreMostVisitedDefaults,
       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+    "undoMostVisitedTileAction",
+    base::BindRepeating(
+      &BraveNewTabMessageHandler::HandleUndoMostVisitedTileAction,
+      base::Unretained(this)));
 }
 
 void BraveNewTabMessageHandler::OnJavascriptAllowed() {
@@ -458,6 +463,18 @@ void BraveNewTabMessageHandler::HandleRestoreMostVisitedDefaults(
     instant_service_->ResetCustomLinks();
   } else {
     instant_service_->UndoAllMostVisitedDeletions();
+  }
+}
+
+void BraveNewTabMessageHandler::HandleUndoMostVisitedTileAction(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  if (instant_service_->IsCustomLinksEnabled()) {
+    instant_service_->UndoCustomLinkAction();
+  } else if (last_blacklisted_.is_valid()) {
+    instant_service_->UndoMostVisitedDeletion(last_blacklisted_);
+    last_blacklisted_ = GURL();
   }
 }
 
