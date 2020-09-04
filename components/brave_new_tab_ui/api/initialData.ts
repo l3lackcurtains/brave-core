@@ -52,7 +52,7 @@ export async function getInitialData (): Promise<InitialData> {
       preferencesAPI.getPreferences(),
       statsAPI.getStats(),
       privateTabDataAPI.getPrivateTabData(),
-      topSitesAPI.getTopSites(),
+      topSitesAPI.getTopSiteTiles(),
       !isIncognito ? brandedWallpaper.getDefaultSuperReferralTopSites() : Promise.resolve(undefined),
       !isIncognito ? brandedWallpaper.getBrandedWallpaper() : Promise.resolve(undefined),
       new Promise((resolve) => {

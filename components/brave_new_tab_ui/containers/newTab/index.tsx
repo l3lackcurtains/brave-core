@@ -24,7 +24,6 @@ import BrandedWallpaperLogo from '../../components/default/brandedWallpaper/logo
 // Helpers
 import VisibilityTimer from '../../helpers/visibilityTimer'
 import arrayMove from 'array-move'
-import { isGridSitePinned } from '../../helpers/newTabUtils'
 import { generateQRData } from '../../binance-utils'
 
 // Types
@@ -193,7 +192,7 @@ class NewTabPage extends React.Component<Props, State> {
     // Do not update topsites order if the drag
     // destination is a pinned tile
     const gridSite = gridSitesData.gridSites[newIndex]
-    if (!gridSite || isGridSitePinned(gridSite)) {
+    if (!gridSite) {
       return
     }
     const items = arrayMove(gridSitesData.gridSites, oldIndex, newIndex)

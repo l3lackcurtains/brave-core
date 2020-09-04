@@ -9,8 +9,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
-#include "base/values.h"
+#include "base/strings/utf_string_conversions.h"
 #include "brave/browser/profiles/profile_util.h"
 #include "brave/browser/search_engines/search_engine_provider_util.h"
 #include "brave/browser/ui/webui/brave_new_tab_ui.h"
@@ -23,6 +24,7 @@
 #include "brave/components/ntp_background_images/browser/view_counter_service.h"
 #include "brave/components/ntp_background_images/common/pref_names.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -115,7 +117,8 @@ base::DictionaryValue GetPrivatePropertiesDictionary(PrefService* prefs) {
 
 // static
 BraveNewTabMessageHandler* BraveNewTabMessageHandler::Create(
-      content::WebUIDataSource* source, Profile* profile) {
+      content::WebUIDataSource* source, Profile* profile,
+      InstantService* instant_service) {
   //
   // Initial Values
   // Should only contain data that is static
@@ -142,14 +145,19 @@ BraveNewTabMessageHandler* BraveNewTabMessageHandler::Create(
     source->AddBoolean(
       "isQwant", brave::IsRegionForQwant(profile));
   }
-  return new BraveNewTabMessageHandler(profile);
+  return new BraveNewTabMessageHandler(profile, instant_service);
 }
 
-BraveNewTabMessageHandler::BraveNewTabMessageHandler(Profile* profile)
-    : profile_(profile) {
+BraveNewTabMessageHandler::BraveNewTabMessageHandler(Profile* profile,
+    InstantService* instant_service)
+        : profile_(profile),
+          instant_service_(instant_service) {
+  instant_service_->AddObserver(this);
 }
 
-BraveNewTabMessageHandler::~BraveNewTabMessageHandler() {}
+BraveNewTabMessageHandler::~BraveNewTabMessageHandler() {
+  instant_service_->RemoveObserver(this);
+}
 
 void BraveNewTabMessageHandler::RegisterMessages() {
   // TODO(petemill): This MessageHandler can be split up to
@@ -197,6 +205,28 @@ void BraveNewTabMessageHandler::RegisterMessages() {
     "getDefaultSuperReferralTopSitesData",
     base::BindRepeating(
       &BraveNewTabMessageHandler::HandleGetDefaultSuperReferralTopSitesData,
+      base::Unretained(this)));
+
+  // TopSite tile methods (MostVisitedSiteInfo)
+  web_ui()->RegisterMessageCallback(
+    "getMostVisitedInfo",
+    base::BindRepeating(
+      &BraveNewTabMessageHandler::HandleGetMostVisitedInfo,
+      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+    "deleteMostVisitedTile",
+    base::BindRepeating(
+      &BraveNewTabMessageHandler::HandleDeleteMostVisitedTile,
+      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+    "reorderMostVisitedTile",
+    base::BindRepeating(
+      &BraveNewTabMessageHandler::HandleReorderMostVisitedTile,
+      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+    "restoreMostVisitedDefaults",
+    base::BindRepeating(
+      &BraveNewTabMessageHandler::HandleRestoreMostVisitedDefaults,
       base::Unretained(this)));
 }
 
@@ -377,6 +407,62 @@ void BraveNewTabMessageHandler::HandleGetDefaultSuperReferralTopSitesData(
       service ? service->GetTopSites(true) : base::Value());
 }
 
+// BEGIN - TopSite tile methods (MostVisitedSiteInfo)
+void BraveNewTabMessageHandler::HandleGetMostVisitedInfo(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  ResolveJavascriptCallback(
+      args->GetList()[0],
+      top_site_tiles_);
+}
+
+void BraveNewTabMessageHandler::HandleDeleteMostVisitedTile(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  std::string url;
+  if (!args->GetString(0, &url))
+    return;
+
+  GURL gurl(url);
+  if (instant_service_->IsCustomLinksEnabled()) {
+    instant_service_->DeleteCustomLink(gurl);
+  } else {
+    instant_service_->DeleteMostVisitedItem(gurl);
+    last_blacklisted_ = gurl;
+  }
+}
+
+void BraveNewTabMessageHandler::HandleReorderMostVisitedTile(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  std::string url;
+  if (!args->GetString(0, &url))
+    return;
+
+  int new_pos;
+  if (!args->GetInteger(1, &new_pos))
+    return;
+
+  GURL gurl(url);
+  instant_service_->ReorderCustomLink(gurl, (uint8_t)new_pos);
+}
+
+void BraveNewTabMessageHandler::HandleRestoreMostVisitedDefaults(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  if (instant_service_->IsCustomLinksEnabled()) {
+    instant_service_->ResetCustomLinks();
+  } else {
+    instant_service_->UndoAllMostVisitedDeletions();
+  }
+}
+
+// END - TopSite tile methods (MostVisitedSiteInfo)
+
 void BraveNewTabMessageHandler::OnPrivatePropertiesChanged() {
   PrefService* prefs = profile_->GetPrefs();
   auto data = GetPrivatePropertiesDictionary(prefs);
@@ -393,4 +479,37 @@ void BraveNewTabMessageHandler::OnPreferencesChanged() {
   PrefService* prefs = profile_->GetPrefs();
   auto data = GetPreferencesDictionary(prefs);
   FireWebUIListener("preferences-changed", data);
+}
+
+// InstantServiceObserver:
+void BraveNewTabMessageHandler::MostVisitedInfoChanged(
+    const InstantMostVisitedInfo& info) {
+  base::Value result(base::Value::Type::DICTIONARY);
+  base::Value tiles(base::Value::Type::LIST);
+
+  for (auto& tile : info.items) {
+    base::Value tile_value(base::Value::Type::DICTIONARY);
+
+    if (tile.title.empty()) {
+      tile_value.SetStringKey("title", tile.url.spec());
+      tile_value.SetIntKey("title_direction", base::i18n::LEFT_TO_RIGHT);
+    } else {
+      tile_value.SetStringKey("title", base::UTF16ToUTF8(tile.title));
+      tile_value.SetIntKey("title_direction",
+          base::i18n::GetFirstStrongCharacterDirection(tile.title));
+    }
+    tile_value.SetStringKey("url", tile.url.spec());
+    // ..
+    tiles.Append(std::move(tile_value));
+  }
+
+  //..
+  result.SetKey("tiles", std::move(tiles));
+  result.SetBoolKey("visible", info.is_visible);
+
+  top_site_tiles_ = std::move(result);
+
+  if (IsJavascriptAllowed()) {
+    FireWebUIListener("most-visited-info-changed", top_site_tiles_);
+  }
 }
