@@ -12,7 +12,7 @@ action("sign_app") {
     assert(target_cpu != "arm64" && target_cpu != "x64")
     target_sign_app_path = "$root_out_dir/apks/ChromeModernPublic.apk"
   } else if (target_cpu == "arm64" || target_cpu == "x64" ||
-      target_apk_base == "mono") {
+             target_apk_base == "mono") {
     target_sign_app_path = "$root_out_dir/apks/MonochromePublic.apk"
   } else {
     target_sign_app_path = "$root_out_dir/apks/ChromePublic.apk"
@@ -26,7 +26,7 @@ action("sign_app") {
     rebase_path("$brave_android_keystore_path", root_out_dir),
     "$brave_android_keystore_password",
     "$brave_android_key_password",
-    "$brave_android_keystore_name"
+    "$brave_android_keystore_name",
   ]
 }
 
@@ -36,25 +36,17 @@ copy("brave") {
   sources = []
   if (target_apk_base == "modern") {
     assert(target_cpu != "arm64" && target_cpu != "x64")
-    deps += ["//chrome/android:chrome_modern_public_apk"]
-    sources += [
-      "$root_out_dir/apks/ChromeModernPublic.apk"
-    ]
+    deps += [ "//chrome/android:chrome_modern_public_apk" ]
+    sources += [ "$root_out_dir/apks/ChromeModernPublic.apk" ]
   } else if (target_cpu == "arm64" || target_cpu == "x64" ||
-      target_apk_base == "mono") {
-    deps += ["//chrome/android:monochrome_public_apk"]
-    sources += [
-      "$root_out_dir/apks/MonochromePublic.apk"
-    ]
+             target_apk_base == "mono") {
+    deps += [ "//chrome/android:monochrome_public_apk" ]
+    sources += [ "$root_out_dir/apks/MonochromePublic.apk" ]
   } else {
-    deps += ["//chrome/android:chrome_public_apk"]
-    sources += [
-      "$root_out_dir/apks/ChromePublic.apk"
-    ]
+    deps += [ "//chrome/android:chrome_public_apk" ]
+    sources += [ "$root_out_dir/apks/ChromePublic.apk" ]
   }
-  outputs = [
-    brave_apk_output
-  ]
+  outputs = [ brave_apk_output ]
 }
 
 java_strings_grd("android_brave_strings_grd") {
@@ -154,12 +146,12 @@ generate_jni("jni_headers") {
     "//brave/android/java/org/chromium/chrome/browser/ntp_background_images/NTPBackgroundImagesBridge.java",
     "//brave/android/java/org/chromium/chrome/browser/preferences/BravePrefServiceBridge.java",
     "//brave/android/java/org/chromium/chrome/browser/preferences/website/BraveShieldsContentSettings.java",
-    "//brave/android/java/org/chromium/chrome/browser/signin/BraveSigninManager.java",
     "//brave/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java",
+    "//brave/android/java/org/chromium/chrome/browser/signin/BraveSigninManager.java",
     "//brave/android/java/org/chromium/chrome/browser/widget/crypto/binance/BinanceNativeWorker.java",
   ]
 
-  if (enable_brave_sync ) {
+  if (enable_brave_sync) {
     sources += [
       "//brave/android/java/org/chromium/chrome/browser/BraveSyncWorker.java",
       "//brave/android/java/org/chromium/chrome/browser/sync/BraveSyncDevices.java",
