@@ -13,23 +13,23 @@
 #define C_KEY_SIZE 32
 
 typedef struct {
-  const uint8_t* encoded_partial_dec_ptr;
+  const uint8_t* encoded_partial_dec;
   uintptr_t encoded_partial_dec_size;
-  const uint8_t* encoded_proofs_ptr;
+  const uint8_t* encoded_proofs;
   uintptr_t encoded_proofs_size;
-  const uint8_t* random_vec_ptr;
+  const uint8_t* random_vec;
   uintptr_t random_vec_size;
   bool error;
 } C_ResultSecondRound;
 
 typedef struct {
-  const uint8_t* pkeys_ptr;
+  const uint8_t* pkeys;
   uintptr_t pkeys_byte_size;
-  const uint8_t* skeys_ptr;
+  const uint8_t* skeys;
   uintptr_t skeys_byte_size;
-  const uint8_t* shared_pubkey_ptr;
+  const uint8_t* shared_pubkey;
   uintptr_t shared_pkeys_byte_size;
-  const uint8_t* encrypted_hashes_ptr;
+  const uint8_t* encrypted_hashes;
   uintptr_t encrypted_hashes_size;
   uintptr_t key_size;
   bool error;

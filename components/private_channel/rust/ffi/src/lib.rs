@@ -12,13 +12,13 @@ macro_rules! assert_not_null {
 
 #[repr(C)]
 pub struct ResultChallenge {
-    pub pkeys_ptr: *const u8,
+    pub pkeys: *const u8,
     pub pkeys_byte_size: usize,
-    pub skeys_ptr: *const u8,
+    pub skeys: *const u8,
     pub skeys_byte_size: usize,
-    pub shared_pubkey_ptr: *const u8,
+    pub shared_pubkey: *const u8,
     pub shared_pkeys_byte_size: usize,
-    pub encrypted_hashes_ptr: *const u8,
+    pub encrypted_hashes: *const u8,
     pub encrypted_hashes_size: usize,
     pub key_size: usize,
     pub error: bool,
@@ -29,14 +29,14 @@ impl Default for ResultChallenge {
         let mock_vec = vec![];
         ResultChallenge {
             error: true,
-            pkeys_ptr: mock_vec.as_ptr(),
+            pkeys: mock_vec.as_ptr(),
             pkeys_byte_size: 0,
-            skeys_ptr: mock_vec.as_ptr(),
+            skeys: mock_vec.as_ptr(),
             skeys_byte_size: 0,
             shared_pkeys_byte_size: 0,
-            shared_pubkey_ptr: mock_vec.as_ptr(),
+            shared_pubkey: mock_vec.as_ptr(),
             encrypted_hashes_size: 0,
-            encrypted_hashes_ptr: mock_vec.as_ptr(),
+            encrypted_hashes: mock_vec.as_ptr(),
             key_size: 0,
         }
     }
@@ -44,11 +44,11 @@ impl Default for ResultChallenge {
 
 #[repr(C)]
 pub struct ResultSecondRound {
-    pub encoded_partial_dec_ptr: *const u8,
+    pub encoded_partial_dec: *const u8,
     pub encoded_partial_dec_size: usize,
-    pub encoded_proofs_ptr: *const u8,
+    pub encoded_proofs: *const u8,
     pub encoded_proofs_size: usize,
-    pub random_vec_ptr: *const u8,
+    pub random_vec: *const u8,
     pub random_vec_size: usize,
     pub error: bool,
 }
@@ -58,11 +58,11 @@ impl Default for ResultSecondRound {
         let mock_vec = vec![];
         ResultSecondRound {
             error: true,
-            encoded_partial_dec_ptr: mock_vec.as_ptr(),
+            encoded_partial_dec: mock_vec.as_ptr(),
             encoded_partial_dec_size: 0,
-            encoded_proofs_ptr: mock_vec.as_ptr(),
+            encoded_proofs: mock_vec.as_ptr(),
             encoded_proofs_size: 0,
-            random_vec_ptr: mock_vec.as_ptr(),
+            random_vec: mock_vec.as_ptr(),
             random_vec_size: 0,
         }
     }
@@ -116,13 +116,13 @@ pub unsafe extern "C" fn client_start_challenge(
     let enc_hashes_buff = std::mem::ManuallyDrop::new(enc_hashes_buff);
 
     ResultChallenge {
-        pkeys_ptr: pkeys_buff.as_ptr(),
+        pkeys: pkeys_buff.as_ptr(),
         pkeys_byte_size: pkeys_buff.len(),
-        skeys_ptr: skeys_buff.as_ptr(),
+        skeys: skeys_buff.as_ptr(),
         skeys_byte_size: skeys_buff.len(),
-        shared_pubkey_ptr: shared_pks_buff.as_ptr(),
+        shared_pubkey: shared_pks_buff.as_ptr(),
         shared_pkeys_byte_size: shared_pks_buff.len(),
-        encrypted_hashes_ptr: enc_hashes_buff.as_ptr(),
+        encrypted_hashes: enc_hashes_buff.as_ptr(),
         encrypted_hashes_size: enc_hashes_buff.len(),
         key_size: KEY_SIZE,
         error: false,
@@ -175,11 +175,11 @@ pub unsafe extern "C" fn client_second_round(
     let rand_vec_buff = std::mem::ManuallyDrop::new(rand_vec_buff);
 
     ResultSecondRound {
-        encoded_partial_dec_ptr: partial_enc_buff.as_ptr(),
+        encoded_partial_dec: partial_enc_buff.as_ptr(),
         encoded_partial_dec_size: partial_enc_buff.len(),
-        encoded_proofs_ptr: proofs_buff.as_ptr(),
+        encoded_proofs: proofs_buff.as_ptr(),
         encoded_proofs_size: proofs_buff.len(),
-        random_vec_ptr: rand_vec_buff.as_ptr(),
+        random_vec: rand_vec_buff.as_ptr(),
         random_vec_size: rand_vec_buff.len(),
         error: false,
     }
@@ -189,30 +189,30 @@ pub unsafe extern "C" fn client_second_round(
 // the Rust compiler will deallocate the memory contents
 #[no_mangle]
 pub unsafe extern "C" fn deallocate_first_round_result(result: ResultChallenge) {
-    assert_not_null!(result.pkeys_ptr);
+    assert_not_null!(result.pkeys);
     let _pkeys = Box::from_raw(std::slice::from_raw_parts_mut(
-        result.pkeys_ptr as *mut u8,
+        result.pkeys as *mut u8,
         result.pkeys_byte_size,
     ))
     .into_vec();
 
-    assert_not_null!(result.skeys_ptr);
+    assert_not_null!(result.skeys);
     let _skeys = Box::from_raw(std::slice::from_raw_parts_mut(
-        result.skeys_ptr as *mut u8,
+        result.skeys as *mut u8,
         result.skeys_byte_size,
     ))
     .into_vec();
 
-    assert_not_null!(result.shared_pubkey_ptr);
+    assert_not_null!(result.shared_pubkey);
     let _shared_key = Box::from_raw(std::slice::from_raw_parts_mut(
-        result.shared_pubkey_ptr as *mut u8,
+        result.shared_pubkey as *mut u8,
         KEY_SIZE,
     ))
     .into_vec();
 
-    assert_not_null!(result.encrypted_hashes_ptr);
+    assert_not_null!(result.encrypted_hashes);
     let _shared_key = Box::from_raw(std::slice::from_raw_parts_mut(
-        result.encrypted_hashes_ptr as *mut u8,
+        result.encrypted_hashes as *mut u8,
         result.encrypted_hashes_size,
     ))
     .into_vec();
@@ -220,23 +220,23 @@ pub unsafe extern "C" fn deallocate_first_round_result(result: ResultChallenge) 
 
 #[no_mangle]
 pub unsafe extern "C" fn deallocate_second_round_result(result: ResultSecondRound) {
-    assert_not_null!(result.encoded_partial_dec_ptr);
+    assert_not_null!(result.encoded_partial_dec);
     let _partial_dec = Box::from_raw(std::slice::from_raw_parts_mut(
-        result.encoded_partial_dec_ptr as *mut u8,
+        result.encoded_partial_dec as *mut u8,
         result.encoded_partial_dec_size,
     ))
     .into_vec();
 
-    assert_not_null!(result.encoded_proofs_ptr);
+    assert_not_null!(result.encoded_proofs);
     let _enc_proofs = Box::from_raw(std::slice::from_raw_parts_mut(
-        result.encoded_proofs_ptr as *mut u8,
+        result.encoded_proofs as *mut u8,
         result.encoded_proofs_size,
     ))
     .into_vec();
 
-    assert_not_null!(result.random_vec_ptr);
+    assert_not_null!(result.random_vec);
     let _rand_vec = Box::from_raw(std::slice::from_raw_parts_mut(
-        result.random_vec_ptr as *mut u8,
+        result.random_vec as *mut u8,
         result.random_vec_size,
     ))
     .into_vec();

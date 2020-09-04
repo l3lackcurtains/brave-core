@@ -5,11 +5,12 @@ source_set("browser") {
   public_deps = []
 
   sources = [
+    "constants.cc",
+    "constants.h",
     "private_channel.cc",
     "private_channel.h",
     "request_utils.cc",
     "request_utils.h",
-    "static_values.h",
   ]
 
   deps = [

@@ -5,7 +5,7 @@
 #include "brave/components/private_channel/browser/request_utils.h"
 
 #include <string>
-#include "brave/components/private_channel/browser/static_values.h"
+#include "brave/components/private_channel/browser/constants.h"
 
 namespace request_utils {
 

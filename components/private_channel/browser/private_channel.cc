@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "brave/components/private_channel/browser/constants.h"
 #include "brave/components/private_channel/browser/request_utils.h"
-#include "brave/components/private_channel/browser/static_values.h"
 #include "brave/components/private_channel/client_private_channel.h"
 #include "brave/components/private_channel/utils.h"
 

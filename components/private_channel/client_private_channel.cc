@@ -27,14 +27,12 @@ ChallengeArtefacts ChallengeFirstRound(const char** input,
   struct ChallengeArtefacts artefacts;
   auto results = private_channel::start_challenge(input, input_size, server_pk);
 
-  artefacts.client_pks =
-      convert_to_str(results.pkeys_ptr, results.pkeys_byte_size);
-  artefacts.client_sks =
-      convert_to_str(results.skeys_ptr, results.skeys_byte_size);
+  artefacts.client_pks = convert_to_str(results.pkeys, results.pkeys_byte_size);
+  artefacts.client_sks = convert_to_str(results.skeys, results.skeys_byte_size);
   artefacts.shared_pubkey =
-      convert_to_str(results.shared_pubkey_ptr, results.shared_pkeys_byte_size);
-  artefacts.encrypted_hashes = convert_to_str(results.encrypted_hashes_ptr,
-                                              results.encrypted_hashes_size);
+      convert_to_str(results.shared_pubkey, results.shared_pkeys_byte_size);
+  artefacts.encrypted_hashes =
+      convert_to_str(results.encrypted_hashes, results.encrypted_hashes_size);
   artefacts.encrypted_hashes_size = results.encrypted_hashes_size;
   artefacts.error = results.error;
 
@@ -51,11 +49,11 @@ SecondRoundArtefacts SecondRound(const char* enc_input,
       private_channel::second_round(enc_input, enc_input_size, client_sks);
 
   artefacts.partial_decryption = convert_to_str(
-      results.encoded_partial_dec_ptr, results.encoded_partial_dec_size);
+      results.encoded_partial_dec, results.encoded_partial_dec_size);
   artefacts.proofs =
-      convert_to_str(results.encoded_proofs_ptr, results.encoded_proofs_size);
+      convert_to_str(results.encoded_proofs, results.encoded_proofs_size);
   artefacts.rand_vec =
-      convert_to_str(results.random_vec_ptr, results.random_vec_size);
+      convert_to_str(results.random_vec, results.random_vec_size);
   artefacts.error = results.error;
 
   private_channel::free_second_round_result(results);
