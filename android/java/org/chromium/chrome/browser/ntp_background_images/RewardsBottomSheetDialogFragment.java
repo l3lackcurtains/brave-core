@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.ntp_background_images.model.SponsoredTab;
 import org.chromium.chrome.browser.ntp_background_images.util.SponsoredImageUtil;
 import org.chromium.chrome.browser.ntp_background_images.util.NewTabPageListener;
 import org.chromium.chrome.browser.ntp_background_images.util.NTPUtil;
+import org.chromium.chrome.browser.util.TabUtils;
 
 import static org.chromium.ui.base.ViewUtils.dpToPx;
 
@@ -144,7 +145,7 @@ public class RewardsBottomSheetDialogFragment extends BottomSheetDialogFragment 
             learnMoreText.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    NTPUtil.openUrlInSameTab(BRAVE_REWARDS_LEARN_MORE);
+                    TabUtils.openUrlInSameTab(BRAVE_REWARDS_LEARN_MORE);
                     dismiss();
                 }
             });
