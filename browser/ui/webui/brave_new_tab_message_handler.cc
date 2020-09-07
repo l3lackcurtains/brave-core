@@ -233,6 +233,11 @@ void BraveNewTabMessageHandler::RegisterMessages() {
     base::BindRepeating(
       &BraveNewTabMessageHandler::HandleUndoMostVisitedTileAction,
       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+    "setMostVisitedSettings",
+    base::BindRepeating(
+      &BraveNewTabMessageHandler::HandleSetMostVisitedSettings,
+      base::Unretained(this)));
 }
 
 void BraveNewTabMessageHandler::OnJavascriptAllowed() {
@@ -475,6 +480,36 @@ void BraveNewTabMessageHandler::HandleUndoMostVisitedTileAction(
   } else if (last_blacklisted_.is_valid()) {
     instant_service_->UndoMostVisitedDeletion(last_blacklisted_);
     last_blacklisted_ = GURL();
+  }
+}
+
+void BraveNewTabMessageHandler::HandleSetMostVisitedSettings(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  bool custom_links_enabled;
+  if (!args->GetBoolean(0, &custom_links_enabled))
+    return;
+
+  bool visible;
+  if (!args->GetBoolean(1, &visible))
+    return;
+
+  auto pair = instant_service_->GetCurrentShortcutSettings();
+  // The first of the pair is true if most-visited tiles are being used.
+  bool old_custom_links_enabled = !pair.first;
+  bool old_visible = pair.second;
+  // |ToggleMostVisitedOrCustomLinks()| always notifies observers. Since we only
+  // want to notify once, we need to call |ToggleShortcutsVisibility()| with
+  // false if we are also going to call |ToggleMostVisitedOrCustomLinks()|.
+  bool toggleCustomLinksEnabled =
+      old_custom_links_enabled != custom_links_enabled;
+  if (old_visible != visible) {
+    instant_service_->ToggleShortcutsVisibility(
+        /* do_notify= */ !toggleCustomLinksEnabled);
+  }
+  if (toggleCustomLinksEnabled) {
+    instant_service_->ToggleMostVisitedOrCustomLinks();
   }
 }
 
