@@ -209,6 +209,9 @@ class NewTabPage extends React.Component<Props, State> {
   }
 
   toggleShowTopSites = () => {
+    // TODO(bsclifton): update UI to check topSitesAPI.isVisible instead.
+    // Need to backfill first, to avoid overwriting user preference.
+    // Settings page needs to be updated to read that value too.
     const new_value = !this.props.newTabData.showTopSites
     this.props.saveShowTopSites(new_value)
     setMostVisitedSettings(customLinksEnabled(), new_value)

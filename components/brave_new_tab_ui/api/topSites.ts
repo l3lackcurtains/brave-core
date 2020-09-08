@@ -4,11 +4,13 @@
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 
 let are_custom_links_enabled: boolean
+let is_visible: boolean
 
 export function getTopSiteTiles (): Promise<chrome.topSites.MostVisitedURL[]> {
   return new Promise(resolve => {
     window.cr.sendWithPromise<any>('getMostVisitedInfo').then((result) => {
       are_custom_links_enabled = result.custom_links_enabled
+      is_visible = result.visible
       resolve(result.tiles)
     })
   })
@@ -37,11 +39,16 @@ export function undoMostVisitedTileAction (): void {
 export function setMostVisitedSettings (custom_links_enabled: boolean,
     visible: boolean): void {
   are_custom_links_enabled = custom_links_enabled
+  is_visible = visible
   chrome.send('setMostVisitedSettings', [custom_links_enabled, visible])
 }
 
 export function customLinksEnabled (): boolean {
   return are_custom_links_enabled
+}
+
+export function isVisible (): boolean {
+  return is_visible
 }
 
 export function generateGridSiteFavicon (url: string): string {
