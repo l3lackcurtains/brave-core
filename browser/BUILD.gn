@@ -236,6 +236,8 @@ source_set("browser_process") {
       "android/brave_shields_content_settings.cc",
       "android/brave_shields_content_settings.h",
       "android/brave_stats_updater_android.cc",
+      "android/brave_perf_predictor_tab_helper_delegate_android_impl.cc",
+      "android/brave_perf_predictor_tab_helper_delegate_android_impl.h",
     ]
 
     if (brave_ads_enabled) {
