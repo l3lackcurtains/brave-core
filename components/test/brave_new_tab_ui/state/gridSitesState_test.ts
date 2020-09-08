@@ -7,7 +7,6 @@
 import * as gridSitesState from '../../../brave_new_tab_ui/state/gridSitesState'
 
 // Helpers
-import { generateGridSiteProperties } from '../../../brave_new_tab_ui/helpers/newTabUtils'
 import * as storage from '../../../brave_new_tab_ui/storage/grid_sites_storage'
 
 const newTopSite1: chrome.topSites.MostVisitedURL = {
@@ -18,6 +17,23 @@ const newTopSite1: chrome.topSites.MostVisitedURL = {
 const newTopSite2: chrome.topSites.MostVisitedURL = {
   url: 'https://clifton.io',
   title: 'BSC]]'
+}
+
+let top_site_id = 1
+const generateGridSiteProperties = (
+  index: number,
+  topSite: chrome.topSites.MostVisitedURL,
+  fromLegacyData?: boolean
+): NewTab.Site => {
+  return {
+    title: topSite.title,
+    url: topSite.url,
+    id: top_site_id++,
+    // In the legacy version of topSites the pinnedIndex
+    // was the site index itself.
+    pinnedIndex: fromLegacyData ? index : undefined,
+    defaultSRTopSite: false
+  }
 }
 
 const gridSites: NewTab.Site[] = [{

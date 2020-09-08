@@ -554,7 +554,6 @@ void BraveNewTabMessageHandler::MostVisitedInfoChanged(
     tile_value.SetStringKey("url", tile.url.spec());
     tile_value.SetStringKey("favicon", tile.favicon.spec());
     tile_value.SetIntKey("source", static_cast<int32_t>(tile.title_source));
-    // TODO(bsclifton): data_generation_time
     tiles.Append(std::move(tile_value));
   }
   result.SetBoolKey("custom_links_enabled", !info.use_most_visited);

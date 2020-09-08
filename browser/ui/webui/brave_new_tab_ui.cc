@@ -33,10 +33,6 @@ BraveNewTabUI::BraveNewTabUI(content::WebUI* web_ui, const std::string& name)
   content::WebUIDataSource::Add(profile_, source);
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 
-  // TODO(bsclifton): find out what is missing
-  // something is generating the most visited tiles when landing on
-  // chrome://new-tab-page. Not sure what...
-
   // OnNewTabPageOpened refreshes the most visited entries while
   // UpdateMostVisitedInfo triggers a call to MostVisitedInfoChanged.
   instant_service_->OnNewTabPageOpened();
