@@ -42,6 +42,10 @@ using ntp_background_images::ViewCounterServiceFactory;
 
 namespace {
 
+bool ShouldExcludeFromTiles(const GURL& url) {
+  return url.spec().find("https://chrome.google.com/webstore") == 0;
+}
+
 bool IsPrivateNewTab(Profile* profile) {
   return brave::IsTorProfile(profile) ||
          profile->IsIncognitoProfile() ||
@@ -541,6 +545,9 @@ void BraveNewTabMessageHandler::MostVisitedInfoChanged(
   int tile_id = 1;
   // See chrome/common/search/instant_types.h for more info
   for (auto& tile : info.items) {
+    if (ShouldExcludeFromTiles(tile.url))
+      continue;
+
     base::Value tile_value(base::Value::Type::DICTIONARY);
     if (tile.title.empty()) {
       tile_value.SetStringKey("title", tile.url.spec());
