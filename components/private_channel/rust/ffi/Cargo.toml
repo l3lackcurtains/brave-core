@@ -17,3 +17,9 @@ name = "private_channel"
 
 [features]
 cbindgen = []
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"

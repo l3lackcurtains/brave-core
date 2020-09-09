@@ -4,9 +4,12 @@ use std::slice;
 
 pub const KEY_SIZE: usize = 32;
 
-macro_rules! assert_not_null {
+macro_rules! abort_if_null {
     ($var:expr) => {
-        assert!(!$var.is_null(), "{} is NULL", stringify!($var));
+        if (!$var.is_null()) {
+            println!("{} is NULL", stringify!($var));
+            std::process::abort();
+        }
     };
 }
 
@@ -75,11 +78,8 @@ pub unsafe extern "C" fn client_start_challenge(
     input_size: c_int,
     server_pk_encoded: *const c_char,
 ) -> ResultChallenge {
-    assert!(!input.is_null(), "Null pointers passed as input");
-    assert!(
-        !server_pk_encoded.is_null(),
-        "Null pointers passed as input"
-    );
+    abort_if_null!(input);
+    abort_if_null!(server_pk_encoded);
 
     let server_pk = match CStr::from_ptr(server_pk_encoded).to_str() {
         Ok(pk) => pk.to_string(),
@@ -135,11 +135,8 @@ pub unsafe extern "C" fn client_second_round(
     _input_size: c_int,
     client_sk_encoded: *const c_char,
 ) -> ResultSecondRound {
-    assert!(!input.is_null(), "Null pointers passed as input");
-    assert!(
-        !client_sk_encoded.is_null(),
-        "Null pointers passed as input"
-    );
+    abort_if_null!(input);
+    abort_if_null!(client_sk_encoded);
 
     let client_sk = match CStr::from_ptr(client_sk_encoded).to_str() {
         Ok(sk) => sk.to_string(),
@@ -189,28 +186,28 @@ pub unsafe extern "C" fn client_second_round(
 // the Rust compiler will deallocate the memory contents
 #[no_mangle]
 pub unsafe extern "C" fn deallocate_first_round_result(result: ResultChallenge) {
-    assert_not_null!(result.pkeys);
+    abort_if_null!(result.pkeys);
     let _pkeys = Box::from_raw(std::slice::from_raw_parts_mut(
         result.pkeys as *mut u8,
         result.pkeys_byte_size,
     ))
     .into_vec();
 
-    assert_not_null!(result.skeys);
+    abort_if_null!(result.skeys);
     let _skeys = Box::from_raw(std::slice::from_raw_parts_mut(
         result.skeys as *mut u8,
         result.skeys_byte_size,
     ))
     .into_vec();
 
-    assert_not_null!(result.shared_pubkey);
+    abort_if_null!(result.shared_pubkey);
     let _shared_key = Box::from_raw(std::slice::from_raw_parts_mut(
         result.shared_pubkey as *mut u8,
         KEY_SIZE,
     ))
     .into_vec();
 
-    assert_not_null!(result.encrypted_hashes);
+    abort_if_null!(result.encrypted_hashes);
     let _shared_key = Box::from_raw(std::slice::from_raw_parts_mut(
         result.encrypted_hashes as *mut u8,
         result.encrypted_hashes_size,
@@ -220,21 +217,21 @@ pub unsafe extern "C" fn deallocate_first_round_result(result: ResultChallenge) 
 
 #[no_mangle]
 pub unsafe extern "C" fn deallocate_second_round_result(result: ResultSecondRound) {
-    assert_not_null!(result.encoded_partial_dec);
+    abort_if_null!(result.encoded_partial_dec);
     let _partial_dec = Box::from_raw(std::slice::from_raw_parts_mut(
         result.encoded_partial_dec as *mut u8,
         result.encoded_partial_dec_size,
     ))
     .into_vec();
 
-    assert_not_null!(result.encoded_proofs);
+    abort_if_null!(result.encoded_proofs);
     let _enc_proofs = Box::from_raw(std::slice::from_raw_parts_mut(
         result.encoded_proofs as *mut u8,
         result.encoded_proofs_size,
     ))
     .into_vec();
 
-    assert_not_null!(result.random_vec);
+    abort_if_null!(result.random_vec);
     let _rand_vec = Box::from_raw(std::slice::from_raw_parts_mut(
         result.random_vec as *mut u8,
         result.random_vec_size,
