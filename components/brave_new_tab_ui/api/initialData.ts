@@ -6,14 +6,12 @@
 import * as preferencesAPI from './preferences'
 import * as statsAPI from './stats'
 import * as privateTabDataAPI from './privateTabData'
-import * as topSitesAPI from './topSites'
 import * as brandedWallpaper from './brandedWallpaper'
 
 export type InitialData = {
   preferences: preferencesAPI.Preferences
   stats: statsAPI.Stats
   privateTabData: privateTabDataAPI.PrivateTabData
-  topSites: chrome.topSites.MostVisitedURL[]
   brandedWallpaperData: undefined | NewTab.BrandedWallpaper
   togetherSupported: boolean
   geminiSupported: boolean
@@ -42,7 +40,6 @@ export async function getInitialData (): Promise<InitialData> {
       preferences,
       stats,
       privateTabData,
-      topSites,
       brandedWallpaperData,
       togetherSupported,
       geminiSupported
@@ -50,7 +47,6 @@ export async function getInitialData (): Promise<InitialData> {
       preferencesAPI.getPreferences(),
       statsAPI.getStats(),
       privateTabDataAPI.getPrivateTabData(),
-      topSitesAPI.getTopSiteTiles(),
       !isIncognito ? brandedWallpaper.getBrandedWallpaper() : Promise.resolve(undefined),
       new Promise((resolve) => {
         if (!('braveTogether' in chrome)) {
@@ -72,7 +68,6 @@ export async function getInitialData (): Promise<InitialData> {
       preferences,
       stats,
       privateTabData,
-      topSites,
       brandedWallpaperData,
       togetherSupported,
       geminiSupported
