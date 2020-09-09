@@ -6,29 +6,22 @@
 #ifndef BRAVE_BROWSER_UI_WEBUI_BRAVE_NEW_TAB_MESSAGE_HANDLER_H_
 #define BRAVE_BROWSER_UI_WEBUI_BRAVE_NEW_TAB_MESSAGE_HANDLER_H_
 
-#include "base/values.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "chrome/browser/search/instant_service_observer.h"
-#include "chrome/common/search/instant_types.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class InstantService;
 class Profile;
 namespace content {
 class WebUIDataSource;
 }
 
 // Handles messages to and from the New Tab Page javascript
-class BraveNewTabMessageHandler : public content::WebUIMessageHandler,
-                                  public InstantServiceObserver {
+class BraveNewTabMessageHandler : public content::WebUIMessageHandler {
  public:
-  explicit BraveNewTabMessageHandler(Profile* profile,
-      InstantService* instant_service);
+  explicit BraveNewTabMessageHandler(Profile* profile);
   ~BraveNewTabMessageHandler() override;
 
   static BraveNewTabMessageHandler* Create(
-      content::WebUIDataSource* html_source, Profile* profile,
-      InstantService* instant_service);
+      content::WebUIDataSource* html_source, Profile* profile);
 
  private:
   // WebUIMessageHandler implementation.
@@ -44,27 +37,14 @@ class BraveNewTabMessageHandler : public content::WebUIMessageHandler,
       const base::ListValue* args);
   void HandleRegisterNewTabPageView(const base::ListValue* args);
   void HandleGetBrandedWallpaperData(const base::ListValue* args);
-  // MostVisited methods
-  void HandleGetMostVisitedInfo(const base::ListValue* args);
-  void HandleDeleteMostVisitedTile(const base::ListValue* args);
-  void HandleReorderMostVisitedTile(const base::ListValue* args);
-  void HandleRestoreMostVisitedDefaults(const base::ListValue* args);
-  void HandleUndoMostVisitedTileAction(const base::ListValue* args);
-  void HandleSetMostVisitedSettings(const base::ListValue* args);
 
   void OnStatsChanged();
   void OnPreferencesChanged();
   void OnPrivatePropertiesChanged();
 
-  // InstantServiceObserver:
-  void MostVisitedInfoChanged(const InstantMostVisitedInfo& info) override;
-
   PrefChangeRegistrar pref_change_registrar_;
-  GURL last_blacklisted_;
   // Weak pointer.
   Profile* profile_;
-  InstantService* instant_service_;
-  base::Value top_site_tiles_;
 
   DISALLOW_COPY_AND_ASSIGN(BraveNewTabMessageHandler);
 };

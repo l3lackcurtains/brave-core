@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "brave/browser/ui/webui/basic_ui.h"
 #include "brave/browser/ui/webui/brave_new_tab_message_handler.h"
+#include "brave/browser/ui/webui/instant_service_message_handler.h"
 #include "brave/common/webui_url_constants.h"
 #include "brave/components/brave_new_tab/resources/grit/brave_new_tab_generated_map.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,7 +30,9 @@ BraveNewTabUI::BraveNewTabUI(content::WebUI* web_ui, const std::string& name)
   content::WebUIDataSource* source = CreateBasicUIHTMLSource(profile_, name,
       kBraveNewTabGenerated, kBraveNewTabGeneratedSize, IDR_BRAVE_NEW_TAB_HTML);
   web_ui->AddMessageHandler(base::WrapUnique(
-    BraveNewTabMessageHandler::Create(source, profile_, instant_service_)));
+    BraveNewTabMessageHandler::Create(source, profile_)));
+  web_ui->AddMessageHandler(base::WrapUnique(
+    InstantServiceMessageHandler::Create(source, profile_, instant_service_)));
   content::WebUIDataSource::Add(profile_, source);
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 
