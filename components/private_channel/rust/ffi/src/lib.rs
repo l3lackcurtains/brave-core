@@ -6,8 +6,8 @@ pub const KEY_SIZE: usize = 32;
 
 macro_rules! abort_if_null {
     ($var:expr) => {
-        if (!$var.is_null()) {
-            println!("{} is NULL", stringify!($var));
+        if ($var.is_null()) {
+            println!("Malformed input: {} is NULL", stringify!($var));
             std::process::abort();
         }
     };
