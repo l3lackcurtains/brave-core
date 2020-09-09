@@ -31,6 +31,8 @@ struct AdPreferences;
 struct AdsHistory;
 struct CategoryContent;
 struct ClientState;
+struct PublisherAdInfo;
+struct PublisherAds;
 struct PurchaseIntentSignalHistory;
 
 using JsonWriter = rapidjson::Writer<rapidjson::StringBuffer>;
@@ -56,6 +58,12 @@ void SaveToJson(
 void SaveToJson(
     JsonWriter* writer,
     const ClientState& state);
+void SaveToJson(
+    JsonWriter* writer,
+    const PublisherAds& ads);
+void SaveToJson(
+    JsonWriter* writer,
+    const PublisherAdInfo& ads);
 void SaveToJson(
     JsonWriter* writer,
     const PurchaseIntentSignalHistory& info);

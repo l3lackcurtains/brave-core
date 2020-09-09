@@ -17,7 +17,7 @@ import {
   ShowAdsHistory,
   Tokens
 } from '../../ui/components'
-import { Grid, Column, Select, ControlWrapper } from 'brave-ui/components'
+import { Grid, Column, Select, ControlWrapper, Checkbox } from 'brave-ui/components'
 
 // Utils
 import * as utils from '../utils'
@@ -153,12 +153,14 @@ class AdsBox extends React.Component<Props, State> {
   }
 
   onAdsSettingChange = (key: string, value: boolean) => {
-    const { adsEnabled } = this.props.rewardsData.adsData
+    const { adsEnabled, shouldShowPublisherAdsOnParticipatingSites } = this.props.rewardsData.adsData
 
     let newValue: any = value
 
     if (key === 'adsEnabled') {
       newValue = !adsEnabled
+    } else if (key === 'shouldShowPublisherAdsOnParticipatingSites') {
+      newValue = !shouldShowPublisherAdsOnParticipatingSites
     }
 
     this.props.actions.onAdsSettingSave(key, newValue)
@@ -171,6 +173,7 @@ class AdsBox extends React.Component<Props, State> {
 
     const {
       adsPerHour,
+      shouldShowPublisherAdsOnParticipatingSites,
       shouldAllowAdsSubdivisionTargeting,
       adsSubdivisionTargeting
     } = this.props.rewardsData.adsData
@@ -191,6 +194,18 @@ class AdsBox extends React.Component<Props, State> {
                 )
               })}
             </Select>
+          </ControlWrapper>
+          <ControlWrapper text={getLocale('adsDeliveryPermissions')}>
+            <Checkbox
+              value={{
+                shouldShowPublisherAdsOnParticipatingSites: shouldShowPublisherAdsOnParticipatingSites
+              }}
+              multiple={true}
+              onChange={this.onAdsSettingChange}
+            >
+              <div data-key='shouldShowPublisherAdsOnParticipatingSites'>{getLocale('adsShowOnParticipatingPublisherSites')}</div>
+            </Checkbox>
+            <div>{getLocale('adsShowOnParticipatingPublisherSitesDescription')}</div>
           </ControlWrapper>
         </Column>
         { shouldAllowAdsSubdivisionTargeting ?

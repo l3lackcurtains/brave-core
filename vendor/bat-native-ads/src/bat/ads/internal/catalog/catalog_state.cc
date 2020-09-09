@@ -28,7 +28,7 @@ Result CatalogState::FromJson(
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  auto result = helper::JSON::Validate(&document, json_schema);
+  const Result result = helper::JSON::Validate(&document, json_schema);
   if (result != SUCCESS) {
     BLOG(1, helper::JSON::GetLastError(&document));
     return result;
@@ -38,7 +38,7 @@ Result CatalogState::FromJson(
   uint64_t new_version = 0;
   uint64_t new_ping = kDefaultCatalogPing * base::Time::kMillisecondsPerSecond;
   CatalogCampaignList new_campaigns;
-  CatalogIssuersInfo new_catalog_issuers;
+  CatalogIssuersInfo new_issuers;
 
   new_catalog_id = document["catalogId"].GetString();
 
@@ -50,136 +50,176 @@ Result CatalogState::FromJson(
   new_ping = document["ping"].GetUint64();
 
   // Campaigns
-  for (const auto& campaign : document["campaigns"].GetArray()) {
-    CatalogCampaignInfo campaign_info;
+  for (const auto& campaign_node : document["campaigns"].GetArray()) {
+    CatalogCampaignInfo campaign;
 
-    campaign_info.campaign_id = campaign["campaignId"].GetString();
-    campaign_info.priority = campaign["priority"].GetUint();
-    campaign_info.start_at = campaign["startAt"].GetString();
-    campaign_info.end_at = campaign["endAt"].GetString();
-    campaign_info.daily_cap = campaign["dailyCap"].GetUint();
-    campaign_info.advertiser_id = campaign["advertiserId"].GetString();
+    campaign.id = campaign_node["campaignId"].GetString();
+    campaign.priority = campaign_node["priority"].GetUint();
+    campaign.start_at = campaign_node["startAt"].GetString();
+    campaign.end_at = campaign_node["endAt"].GetString();
+    campaign.daily_cap = campaign_node["dailyCap"].GetUint();
+    campaign.advertiser_id = campaign_node["advertiserId"].GetString();
 
     // Geo targets
-    for (const auto& geo_target : campaign["geoTargets"].GetArray()) {
-      CatalogGeoTargetInfo geo_target_info;
+    for (const auto& geo_target_node : campaign_node["geoTargets"].GetArray()) {
+      CatalogGeoTargetInfo geo_target;
+      geo_target.code = geo_target_node["code"].GetString();
+      geo_target.name = geo_target_node["name"].GetString();
 
-      geo_target_info.code = geo_target["code"].GetString();
-      geo_target_info.name = geo_target["name"].GetString();
-
-      campaign_info.geo_targets.push_back(geo_target_info);
+      campaign.geo_targets.push_back(geo_target);
     }
 
     // Day parts
-    for (const auto& day_part : campaign["dayParts"].GetArray()) {
-      CatalogDayPartInfo day_part_info;
+    for (const auto& day_part_node : campaign_node["dayParts"].GetArray()) {
+      CatalogDayPartInfo day_part;
 
-      day_part_info.dow = day_part["dow"].GetString();
-      day_part_info.start_minute = day_part["startMinute"].GetUint();
-      day_part_info.end_minute = day_part["endMinute"].GetUint();
+      day_part.dow = day_part_node["dow"].GetString();
+      day_part.start_minute = day_part_node["startMinute"].GetUint();
+      day_part.end_minute = day_part_node["endMinute"].GetUint();
 
-      campaign_info.day_parts.push_back(day_part_info);
+      campaign.day_parts.push_back(day_part);
     }
 
     // Creative sets
-    for (const auto& creative_set : campaign["creativeSets"].GetArray()) {
-      CatalogCreativeSetInfo creative_set_info;
+    for (const auto& creative_set_node :
+        campaign_node["creativeSets"].GetArray()) {
+      CatalogCreativeSetInfo creative_set;
 
-      creative_set_info.creative_set_id =
-          creative_set["creativeSetId"].GetString();
+      creative_set.id = creative_set_node["creativeSetId"].GetString();
 
-      creative_set_info.per_day = creative_set["perDay"].GetUint();
+      creative_set.per_day = creative_set_node["perDay"].GetUint();
 
-      creative_set_info.total_max = creative_set["totalMax"].GetUint();
+      creative_set.total_max = creative_set_node["totalMax"].GetUint();
 
       // Segments
-      auto segments = creative_set["segments"].GetArray();
-      if (segments.Size() == 0) {
+      const auto segment_nodes = creative_set_node["segments"].GetArray();
+      if (segment_nodes.Size() == 0) {
         continue;
       }
 
-      for (const auto& segment : segments) {
-        CatalogSegmentInfo segment_info;
+      for (const auto& segment_node : segment_nodes) {
+        CatalogSegmentInfo segment;
 
-        segment_info.code = segment["code"].GetString();
-        segment_info.name = segment["name"].GetString();
+        segment.code = segment_node["code"].GetString();
+        segment.name = segment_node["name"].GetString();
 
-        creative_set_info.segments.push_back(segment_info);
+        creative_set.segments.push_back(segment);
       }
 
       // Oses
-      auto oses = creative_set["oses"].GetArray();
+      for (const auto& os_node : creative_set_node["oses"].GetArray()) {
+        CatalogOsInfo os;
 
-      for (const auto& os : oses) {
-        CatalogOsInfo os_info;
+        os.code = os_node["code"].GetString();
+        os.name = os_node["name"].GetString();
 
-        os_info.code = os["code"].GetString();
-        os_info.name = os["name"].GetString();
-
-        creative_set_info.oses.push_back(os_info);
+        creative_set.oses.push_back(os);
       }
 
       // Conversions
-      const auto conversions = creative_set["conversions"].GetArray();
-
-      for (const auto& conversion : conversions) {
+      for (const auto& conversion_node :
+          creative_set_node["conversions"].GetArray()) {
         AdConversionInfo ad_conversion;
 
-        ad_conversion.creative_set_id = creative_set_info.creative_set_id;
-        ad_conversion.type = conversion["type"].GetString();
-        ad_conversion.url_pattern = conversion["urlPattern"].GetString();
+        ad_conversion.creative_set_id = creative_set.id;
+        ad_conversion.type = conversion_node["type"].GetString();
+        ad_conversion.url_pattern = conversion_node["urlPattern"].GetString();
         ad_conversion.observation_window =
-            conversion["observationWindow"].GetUint();
+            conversion_node["observationWindow"].GetUint();
 
-        base::Time end_at_timestamp;
-        if (!base::Time::FromUTCString(campaign_info.end_at.c_str(),
-            &end_at_timestamp)) {
+        base::Time end_at_time;
+        if (!base::Time::FromUTCString(campaign.end_at.c_str(), &end_at_time)) {
+          BLOG(1, "Creative set id " << creative_set.id << " has an invalid "
+              "endAt timestamp");
+
           continue;
         }
 
-        base::Time expiry_timestamp = end_at_timestamp +
+        const base::Time expiry_time = end_at_time +
             base::TimeDelta::FromDays(ad_conversion.observation_window);
         ad_conversion.expiry_timestamp =
-            static_cast<int64_t>(expiry_timestamp.ToDoubleT());
+            static_cast<int64_t>(expiry_time.ToDoubleT());
 
-        creative_set_info.ad_conversions.push_back(ad_conversion);
+        creative_set.ad_conversions.push_back(ad_conversion);
       }
 
       // Creatives
-      for (const auto& creative : creative_set["creatives"].GetArray()) {
-        std::string creative_instance_id =
-            creative["creativeInstanceId"].GetString();
+      for (const auto& creative_node :
+          creative_set_node["creatives"].GetArray()) {
+        const std::string creative_instance_id =
+            creative_node["creativeInstanceId"].GetString();
 
         // Type
-        auto type = creative["type"].GetObject();
+        const auto type_node = creative_node["type"].GetObject();
 
-        std::string code = type["code"].GetString();
+        const std::string code = type_node["code"].GetString();
         if (code == "notification_all_v1") {
-          CatalogCreativeAdNotificationInfo creative_info;
+          CatalogAdNotificationCreativeInfo creative;
 
-          creative_info.creative_instance_id = creative_instance_id;
+          creative.creative_instance_id = creative_instance_id;
 
           // Type
-          creative_info.type.code = code;
-          creative_info.type.name = type["name"].GetString();
-          creative_info.type.platform = type["platform"].GetString();
-          creative_info.type.version = type["version"].GetUint64();
+          creative.type.code = code;
+          creative.type.name = type_node["name"].GetString();
+          creative.type.platform = type_node["platform"].GetString();
+          creative.type.version = type_node["version"].GetUint64();
 
           // Payload
-          auto payload = creative["payload"].GetObject();
-          creative_info.payload.body = payload["body"].GetString();
-          creative_info.payload.title = payload["title"].GetString();
-          creative_info.payload.target_url = payload["targetUrl"].GetString();
-          if (!GURL(creative_info.payload.target_url).is_valid()) {
+          const auto payload_node = creative_node["payload"].GetObject();
+
+          creative.payload.title = payload_node["title"].GetString();
+
+          creative.payload.body = payload_node["body"].GetString();
+
+          creative.payload.target_url = payload_node["targetUrl"].GetString();
+          if (!GURL(creative.payload.target_url).is_valid()) {
             BLOG(1, "Invalid target URL for creative instance id "
                 << creative_instance_id);
             continue;
           }
 
-          creative_set_info.creative_ad_notifications.push_back(creative_info);
+          creative_set.ad_notification_creatives.push_back(creative);
         } else if (code == "in_page_all_v1") {
-          // TODO(tmancey): https://github.com/brave/brave-browser/issues/7298
-          continue;
+          CatalogPublisherAdCreativeInfo creative;
+
+          creative.creative_instance_id = creative_instance_id;
+
+          // Type
+          creative.type.code = code;
+          creative.type.name = type_node["name"].GetString();
+          creative.type.platform = type_node["platform"].GetString();
+          creative.type.version = type_node["version"].GetUint64();
+
+          // Payload
+          const auto payload_node = creative_node["payload"].GetObject();
+
+          creative.payload.creative_url =
+              payload_node["creativeUrl"].GetString();
+          if (!GURL(creative.payload.creative_url).is_valid()) {
+            BLOG(1, "Invalid creative URL for creative instance id "
+                << creative_instance_id);
+            continue;
+          }
+
+          creative.payload.size = payload_node["size"].GetString();
+
+          creative.payload.target_url = payload_node["targetUrl"].GetString();
+          if (!GURL(creative.payload.target_url).is_valid()) {
+            BLOG(1, "Invalid target URL for creative instance id "
+                << creative_instance_id);
+            continue;
+          }
+
+          // Channels
+          for (const auto& channel_node :
+              creative_set_node["channels"].GetArray()) {
+            CatalogPublisherAdChannelInfo channel;
+            channel.name = channel_node.GetString();
+
+            creative.channels.push_back(channel);
+          }
+
+          creative_set.publisher_ad_creatives.push_back(creative);
         } else {
           // Unknown type
           NOTREACHED();
@@ -187,35 +227,35 @@ Result CatalogState::FromJson(
         }
       }
 
-      campaign_info.creative_sets.push_back(creative_set_info);
+      campaign.creative_sets.push_back(creative_set);
     }
 
-    new_campaigns.push_back(campaign_info);
+    new_campaigns.push_back(campaign);
   }
 
   // Issuers
-  for (const auto& issuer : document["issuers"].GetArray()) {
-    CatalogIssuerInfo catalog_issuer_info;
+  for (const auto& issuer_node : document["issuers"].GetArray()) {
+    CatalogIssuerInfo issuer;
 
-    std::string name = issuer["name"].GetString();
-    std::string public_key = issuer["publicKey"].GetString();
+    std::string name = issuer_node["name"].GetString();
+    std::string public_key = issuer_node["publicKey"].GetString();
 
     if (name == "confirmation") {
-      new_catalog_issuers.public_key = public_key;
+      new_issuers.public_key = public_key;
       continue;
     }
 
-    catalog_issuer_info.name = name;
-    catalog_issuer_info.public_key = public_key;
+    issuer.name = name;
+    issuer.public_key = public_key;
 
-    new_catalog_issuers.issuers.push_back(catalog_issuer_info);
+    new_issuers.issuers.push_back(issuer);
   }
 
   catalog_id = new_catalog_id;
   version = new_version;
   ping = new_ping;
   campaigns = new_campaigns;
-  catalog_issuers = new_catalog_issuers;
+  issuers = new_issuers;
 
   return SUCCESS;
 }

@@ -95,6 +95,7 @@ describe('rewards reducer', () => {
         const initState: Rewards.State = { ...defaultState }
         initState.adsData = {
           adsEnabled: false,
+          shouldShowPublisherAdsOnParticipatingSites: true,
           adsPerHour: 2,
           adsSubdivisionTargeting: 'US-CA',
           automaticallyDetectedAdsSubdivisionTargeting: 'US-FL',
@@ -110,6 +111,7 @@ describe('rewards reducer', () => {
         const expectedState: Rewards.State = { ...defaultState }
         expectedState.adsData = {
           adsEnabled: true,
+          shouldShowPublisherAdsOnParticipatingSites: true,
           adsPerHour: 5,
           adsSubdivisionTargeting: 'US-CA',
           automaticallyDetectedAdsSubdivisionTargeting: 'US-FL',
@@ -129,6 +131,7 @@ describe('rewards reducer', () => {
           payload: {
             adsData: {
               adsEnabled: true,
+              shouldShowPublisherAdsOnParticipatingSites: true,
               adsPerHour: 5,
               adsSubdivisionTargeting: 'US-CA',
               automaticallyDetectedAdsSubdivisionTargeting: 'US-FL',
@@ -150,6 +153,7 @@ describe('rewards reducer', () => {
         const expectedState: Rewards.State = { ...defaultState }
         expectedState.adsData = {
           adsEnabled: false,
+          shouldShowPublisherAdsOnParticipatingSites: true,
           adsPerHour: 2,
           shouldAllowAdsSubdivisionTargeting: true,
           adsUIEnabled: true,
@@ -166,6 +170,7 @@ describe('rewards reducer', () => {
           payload: {
             adsData: {
               adsEnabled: false,
+              shouldShowPublisherAdsOnParticipatingSites: true,
               adsPerHour: 2,
               shouldAllowAdsSubdivisionTargeting: true,
               adsUIEnabled: true,
@@ -185,7 +190,7 @@ describe('rewards reducer', () => {
       const initState: Rewards.State = { }
       initState.adsData = {
         adsEnabled: false,
-        shouldOptOutfAdConversions: true,
+        shouldShowPublisherAdsOnParticipatingSites: true,
         adsPerHour: 2,
         shouldAllowAdsSubdivisionTargeting: true,
         adsUIEnabled: false,

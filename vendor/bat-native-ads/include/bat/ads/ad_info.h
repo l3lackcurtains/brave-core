@@ -18,10 +18,13 @@ struct ADS_EXPORT AdInfo {
       const AdInfo& info);
   ~AdInfo();
 
+  std::string uuid;
   std::string creative_instance_id;
   std::string creative_set_id;
   std::string campaign_id;
   std::string category;
+  std::string title;
+  std::string body;
   std::string target_url;
   std::string geo_target;
 };

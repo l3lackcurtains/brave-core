@@ -24,6 +24,8 @@ class AdsClientMock : public AdsClient {
 
   MOCK_CONST_METHOD0(IsEnabled, bool());
 
+  MOCK_CONST_METHOD0(ShouldShowPublisherAdsOnParticipatingSites, bool());
+
   MOCK_CONST_METHOD0(ShouldAllowAdConversionTracking, bool());
 
   MOCK_CONST_METHOD0(GetLocale, std::string());

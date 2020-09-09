@@ -71,7 +71,7 @@ void CreativeAdNotifications::Save(
       std::bind(&OnResultCallback, _1, callback));
 }
 
-void CreativeAdNotifications::GetCreativeAdNotifications(
+void CreativeAdNotifications::GetForCategories(
     const classification::CategoryList& categories,
     GetCreativeAdNotificationsCallback callback) {
   if (categories.empty()) {
@@ -94,9 +94,9 @@ void CreativeAdNotifications::GetCreativeAdNotifications(
           "can.total_max, "
           "c.category, "
           "gt.geo_target, "
-          "can.target_url, "
           "can.title, "
           "can.body, "
+          "can.target_url, "
           "can.ptr "
       "FROM %s AS can "
           "INNER JOIN categories AS c "
@@ -147,7 +147,7 @@ void CreativeAdNotifications::GetCreativeAdNotifications(
           _1, categories, callback));
 }
 
-void CreativeAdNotifications::GetAllCreativeAdNotifications(
+void CreativeAdNotifications::GetAll(
     GetCreativeAdNotificationsCallback callback) {
   const std::string query = base::StringPrintf(
       "SELECT "
@@ -164,9 +164,9 @@ void CreativeAdNotifications::GetAllCreativeAdNotifications(
           "can.total_max, "
           "c.category, "
           "gt.geo_target, "
-          "can.target_url, "
           "can.title, "
           "can.body, "
+          "can.target_url, "
           "can.ptr "
       "FROM %s AS can "
           "INNER JOIN categories AS c "
@@ -281,9 +281,9 @@ int CreativeAdNotifications::BindParameters(
     BindBool(command, index++, creative_ad_notification.conversion);
     BindInt64(command, index++, creative_ad_notification.per_day);
     BindInt64(command, index++, creative_ad_notification.total_max);
-    BindString(command, index++, creative_ad_notification.target_url);
     BindString(command, index++, creative_ad_notification.title);
     BindString(command, index++, creative_ad_notification.body);
+    BindString(command, index++, creative_ad_notification.target_url);
     BindDouble(command, index++, creative_ad_notification.ptr);
 
     count++;
@@ -328,16 +328,16 @@ void CreativeAdNotifications::OnGetCreativeAdNotifications(
     return;
   }
 
-  CreativeAdNotificationList creative_ad_notifications;
+  CreativeAdNotificationList creatives;
 
   for (auto const& record : response->result->get_records()) {
-    const CreativeAdNotificationInfo info =
+    const CreativeAdNotificationInfo creative =
         GetCreativeAdNotificationFromRecord(record.get());
 
-    creative_ad_notifications.emplace_back(info);
+    creatives.emplace_back(creative);
   }
 
-  callback(Result::SUCCESS, categories, creative_ad_notifications);
+  callback(Result::SUCCESS, categories, creatives);
 }
 
 void CreativeAdNotifications::OnGetAllCreativeAdNotifications(
@@ -349,25 +349,20 @@ void CreativeAdNotifications::OnGetAllCreativeAdNotifications(
     return;
   }
 
-  CreativeAdNotificationList creative_ad_notifications;
+  CreativeAdNotificationList creatives;
 
-  std::set<std::string> categories;
+  classification::CategoryList categories;
 
   for (auto const& record : response->result->get_records()) {
-    const CreativeAdNotificationInfo info =
+    const CreativeAdNotificationInfo creative =
         GetCreativeAdNotificationFromRecord(record.get());
 
-    creative_ad_notifications.emplace_back(info);
+    creatives.push_back(creative);
 
-    categories.insert(info.category);
+    categories.push_back(creative.category);
   }
 
-  classification::CategoryList normalized_categories;
-  for (const auto& category : categories) {
-    normalized_categories.push_back(category);
-  }
-
-  callback(Result::SUCCESS, normalized_categories, creative_ad_notifications);
+  callback(Result::SUCCESS, categories, creatives);
 }
 
 CreativeAdNotificationInfo
@@ -388,9 +383,9 @@ CreativeAdNotifications::GetCreativeAdNotificationFromRecord(
   info.total_max = ColumnInt(record, 10);
   info.category = ColumnString(record, 11);
   info.geo_targets.push_back(ColumnString(record, 12));
-  info.target_url = ColumnString(record, 13);
-  info.title = ColumnString(record, 14);
-  info.body = ColumnString(record, 15);
+  info.title = ColumnString(record, 13);
+  info.body = ColumnString(record, 14);
+  info.target_url = ColumnString(record, 15);
   info.ptr = ColumnDouble(record, 16);
 
   return info;

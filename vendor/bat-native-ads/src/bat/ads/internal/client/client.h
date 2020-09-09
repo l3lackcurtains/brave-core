@@ -18,6 +18,7 @@
 #include "bat/ads/ads.h"
 #include "bat/ads/category_content.h"
 #include "bat/ads/internal/bundle/creative_ad_notification_info.h"
+#include "bat/ads/internal/bundle/creative_publisher_ad_info.h"
 #include "bat/ads/internal/classification/page_classifier/page_classifier.h"
 #include "bat/ads/internal/classification/purchase_intent_classifier/purchase_intent_signal_history.h"
 #include "bat/ads/internal/client/client_state.h"
@@ -84,6 +85,13 @@ class Client {
   void ResetSeenAdNotifications(
       const CreativeAdNotificationList& ads);
 
+  void UpdateSeenPublisherAd(
+      const std::string& creative_instance_id,
+      uint64_t value);
+  const std::map<std::string, uint64_t> GetSeenPublisherAds();
+  void ResetSeenPublisherAds(
+      const CreativePublisherAdList& ads);
+
   void UpdateSeenAdvertiser(
       const std::string& advertiser_id,
       const uint64_t value);
@@ -102,17 +110,21 @@ class Client {
   void AppendPageProbabilitiesToHistory(
       const classification::PageProbabilitiesMap& page_probabilities);
   const classification::PageProbabilitiesList& GetPageProbabilitiesHistory();
-  void AppendCreativeSetIdToCreativeSetHistory(
+
+  void AppendCreativeSetHistoryForCreativeSetId(
       const std::string& creative_set_id);
   const std::map<std::string, std::deque<uint64_t>>&
       GetCreativeSetHistory() const;
-  void AppendCreativeSetIdToAdConversionHistory(
+
+  void AppendAdConversionHistoryForCreativeSetId(
       const std::string& creative_set_id);
   const std::map<std::string, std::deque<uint64_t>>&
       GetAdConversionHistory() const;
-  void AppendCampaignIdToCampaignHistory(
+
+  void AppendCampaignHistoryForCampaignId(
       const std::string& campaign_id);
   const std::map<std::string, std::deque<uint64_t>>& GetCampaignHistory() const;
+
   std::string GetVersionCode() const;
   void SetVersionCode(
       const std::string& value);

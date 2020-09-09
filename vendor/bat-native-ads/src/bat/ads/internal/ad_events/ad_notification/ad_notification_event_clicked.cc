@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "bat/ads/internal/ad_events/ad_notification_event_dismissed.h"
+#include "bat/ads/internal/ad_events/ad_notification/ad_notification_event_clicked.h"
 
 #include "bat/ads/confirmation_type.h"
 #include "bat/ads/internal/ad_notifications/ad_notifications.h"
@@ -14,27 +14,27 @@
 namespace ads {
 
 namespace {
-const ConfirmationType kConfirmationType = ConfirmationType::kDismissed;
+const ConfirmationType kConfirmationType = ConfirmationType::kClicked;
 }  // namespace
 
-AdNotificationEventDismissed::AdNotificationEventDismissed(
+AdNotificationEventClicked::AdNotificationEventClicked(
     AdsImpl* ads)
     : ads_(ads) {
   DCHECK(ads_);
 }
 
-AdNotificationEventDismissed::~AdNotificationEventDismissed() = default;
+AdNotificationEventClicked::~AdNotificationEventClicked() = default;
 
-void AdNotificationEventDismissed::Trigger(
+void AdNotificationEventClicked::Trigger(
     const AdNotificationInfo& ad_notification) {
-  BLOG(3, "Dismissed ad notification with uuid " << ad_notification.uuid
+  BLOG(3, "Clicked ad notification with uuid " << ad_notification.uuid
       << " and " << ad_notification.creative_instance_id
           << " creative instance id");
 
   ads_->get_ad_notifications()->Remove(ad_notification.uuid,
-      /* should dismiss */ false);
+      /* should dismiss */ true);
 
-  ads_->AppendAdNotificationToHistory(ad_notification, kConfirmationType);
+  ads_->AppendAdToHistory(ad_notification, kConfirmationType);
 
   ads_->get_confirmations()->ConfirmAd(ad_notification, kConfirmationType);
 }

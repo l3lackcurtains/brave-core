@@ -10,11 +10,13 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "brave/components/services/bat_ads/public/interfaces/bat_ads.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "bat/ads/ads.h"
+#include "bat/ads/publisher_ad_info.h"
 #include "bat/ads/statement_info.h"
 
 namespace ads {
@@ -41,6 +43,9 @@ class BatAdsImpl :
       InitializeCallback callback) override;
   void Shutdown(
       ShutdownCallback callback) override;
+
+  void RemoveAllHistory(
+      RemoveAllHistoryCallback callback) override;
 
   void ChangeLocale(
       const std::string& locale) override;
@@ -73,22 +78,15 @@ class BatAdsImpl :
   void OnTabClosed(
       const int32_t tab_id) override;
 
-  void GetAdNotification(
-      const std::string& uuid,
-      GetAdNotificationCallback callback) override;
-  void OnAdNotificationEvent(
-      const std::string& uuid,
-      const ads::AdNotificationEventType event_type) override;
-
-  void RemoveAllHistory(
-      RemoveAllHistoryCallback callback) override;
-
   void OnWalletUpdated(
       const std::string& payment_id,
       const std::string& recovery_seed_base64) override;
 
   void UpdateAdRewards(
       const bool should_reconcile) override;
+
+  void OnUserModelUpdated(
+      const std::string& id) override;
 
   void GetAdsHistory(
       const uint64_t from_timestamp,
@@ -97,6 +95,26 @@ class BatAdsImpl :
 
   void GetTransactionHistory(
       GetTransactionHistoryCallback callback) override;
+
+  void GetAdNotification(
+      const std::string& uuid,
+      GetAdNotificationCallback callback) override;
+  void OnAdNotificationEvent(
+      const std::string& uuid,
+      const ads::AdNotificationEventType event_type) override;
+
+  void GetPublisherAds(
+      const std::string& url,
+      const std::vector<std::string>& sizes,
+      GetPublisherAdsCallback callback) override;
+  void OnPublisherAdEvent(
+      const std::string& json,
+      const ads::PublisherAdEventType event_type) override;
+  void GetPublisherAdsToPreCache(
+      GetPublisherAdsToPreCacheCallback callback) override;
+  void CanShowPublisherAds(
+      const std::string& url,
+      CanShowPublisherAdsCallback callback) override;
 
   void ToggleAdThumbUp(
       const std::string& creative_instance_id,
@@ -126,9 +144,6 @@ class BatAdsImpl :
       const std::string& creative_set_id,
       const bool flagged,
       ToggleFlagAdCallback callback) override;
-
-  void OnUserModelUpdated(
-      const std::string& id) override;
 
  private:
   // Workaround to pass base::OnceCallback into std::bind
@@ -169,6 +184,23 @@ class BatAdsImpl :
     CallbackHolder<GetTransactionHistoryCallback>* holder,
     const bool success,
     const ads::StatementInfo& statement);
+
+  static void OnGetPublisherAds(
+      CallbackHolder<GetPublisherAdsCallback>* holder,
+      const int32_t result,
+      const std::string& url,
+      const std::vector<std::string>& sizes,
+      const ads::PublisherAds& ads);
+
+  static void OnGetPublisherAdsToPreCache(
+      CallbackHolder<GetPublisherAdsToPreCacheCallback>* holder,
+      const int32_t result,
+      const ads::PublisherAds& ads);
+
+  static void OnCanShowPublisherAds(
+      CallbackHolder<CanShowPublisherAdsCallback>* holder,
+      const std::string& url,
+      const bool can_show);
 
   std::unique_ptr<BatAdsClientMojoBridge> bat_ads_client_mojo_proxy_;
   std::unique_ptr<ads::Ads> ads_;

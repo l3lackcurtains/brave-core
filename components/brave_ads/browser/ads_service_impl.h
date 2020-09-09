@@ -120,6 +120,22 @@ class AdsServiceImpl : public AdsService,
   void GetTransactionHistory(
       GetTransactionHistoryCallback callback) override;
 
+  void GetPublisherAds(
+      const std::string& url,
+      const std::vector<std::string>& sizes,
+      OnGetPublisherAdsCallback callback) override;
+
+  void GetPublisherAdsToPreCache(
+      OnGetPublisherAdsToPreCacheCallback callback) override;
+
+  void CanShowPublisherAds(
+      const std::string& url,
+      OnCanShowPublisherAdsCallback callback) override;
+
+  void OnPublisherAdEvent(
+      const PublisherAdInfo& info,
+      const ads::PublisherAdEventType event_type) override;
+
   void ToggleAdThumbUp(
       const std::string& creative_instance_id,
       const std::string& creative_set_id,

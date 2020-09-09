@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef BAT_ADS_INTERNAL_CATALOG_CATALOG_CREATIVE_AD_NOTIFICATION_INFO_H_
-#define BAT_ADS_INTERNAL_CATALOG_CATALOG_CREATIVE_AD_NOTIFICATION_INFO_H_
+#ifndef BAT_ADS_INTERNAL_CATALOG_CATALOG_AD_NOTIFICATION_CREATIVE_INFO_H_
+#define BAT_ADS_INTERNAL_CATALOG_CATALOG_AD_NOTIFICATION_CREATIVE_INFO_H_
 
 #include <vector>
 
@@ -13,13 +13,13 @@
 
 namespace ads {
 
-struct CatalogCreativeAdNotificationInfo : CatalogCreativeInfo {
+struct CatalogAdNotificationCreativeInfo : CatalogCreativeInfo {
   CatalogAdNotificationPayloadInfo payload;
 };
 
-using CatalogCreativeAdNotificationList =
-    std::vector<CatalogCreativeAdNotificationInfo>;
+using CatalogAdNotificationCreativeList =
+    std::vector<CatalogAdNotificationCreativeInfo>;
 
 }  // namespace ads
 
-#endif  // BAT_ADS_INTERNAL_CATALOG_CATALOG_CREATIVE_AD_NOTIFICATION_INFO_H_
+#endif  // BAT_ADS_INTERNAL_CATALOG_CATALOG_AD_NOTIFICATION_CREATIVE_INFO_H_

@@ -30,7 +30,7 @@ struct CatalogState {
   uint64_t version = 0;
   uint64_t ping = 0;
   CatalogCampaignList campaigns;
-  CatalogIssuersInfo catalog_issuers;
+  CatalogIssuersInfo issuers;
 };
 
 }  // namespace ads

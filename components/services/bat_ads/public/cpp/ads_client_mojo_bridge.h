@@ -35,6 +35,10 @@ class AdsClientMojoBridge
       bool* out_is_enabled) override;
   void IsEnabled(
       IsEnabledCallback callback) override;
+  bool ShouldShowPublisherAdsOnParticipatingSites(
+      bool* out_should_show) override;
+  void ShouldShowPublisherAdsOnParticipatingSites(
+      ShouldShowPublisherAdsOnParticipatingSitesCallback callback) override;
   bool ShouldAllowAdConversionTracking(
       bool* out_should_allow) override;
   void ShouldAllowAdConversionTracking(

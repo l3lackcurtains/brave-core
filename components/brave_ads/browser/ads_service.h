@@ -15,12 +15,13 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "brave/components/brave_ads/browser/ads_service_observer.h"
+#include "brave/vendor/bat-native-ads/include/bat/ads/mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sessions/core/session_id.h"
 #include "url/gurl.h"
 
 namespace ads {
-struct AdsHistory;
+struct PublisherAdInfo;
 }
 
 namespace base {
@@ -28,6 +29,13 @@ class ListValue;
 }
 
 namespace brave_ads {
+
+using OnGetPublisherAdsCallback = base::OnceCallback<void(const std::string&,
+    const std::vector<std::string>&, const base::ListValue&)>;
+using OnGetPublisherAdsToPreCacheCallback =
+    base::OnceCallback<void(const base::ListValue&)>;
+using OnCanShowPublisherAdsCallback = base::OnceCallback<void(
+    const std::string&, const bool)>;
 
 using OnGetAdsHistoryCallback =
     base::OnceCallback<void(const base::ListValue&)>;
@@ -62,6 +70,10 @@ class AdsService : public KeyedService {
   virtual bool IsEnabled() const = 0;
   virtual void SetEnabled(
       const bool is_enabled) = 0;
+
+  virtual bool ShouldShowPublisherAdsOnParticipatingSites() const = 0;
+  virtual void SetShowPublisherAdsOnParticipatingSites(
+      const bool should_show) = 0;
 
   virtual bool ShouldAllowAdConversionTracking() const = 0;
   virtual void SetAllowAdConversionTracking(
@@ -109,6 +121,9 @@ class AdsService : public KeyedService {
   virtual void UpdateAdRewards(
       const bool should_reconcile) = 0;
 
+  virtual void OnUserModelUpdated(
+      const std::string& id) = 0;
+
   virtual void GetAdsHistory(
       const uint64_t from_timestamp,
       const uint64_t to_timestamp,
@@ -116,6 +131,19 @@ class AdsService : public KeyedService {
 
   virtual void GetTransactionHistory(
       GetTransactionHistoryCallback callback) = 0;
+
+  virtual void GetPublisherAds(
+      const std::string& url,
+      const std::vector<std::string>& sizes,
+      OnGetPublisherAdsCallback callback) = 0;
+  virtual void OnPublisherAdEvent(
+      const ads::PublisherAdInfo& publisher_ad,
+      const ads::PublisherAdEventType event_type) = 0;
+  virtual void GetPublisherAdsToPreCache(
+      OnGetPublisherAdsToPreCacheCallback callback) = 0;
+  virtual void CanShowPublisherAds(
+      const std::string& url,
+      OnCanShowPublisherAdsCallback callback) = 0;
 
   virtual void ToggleAdThumbUp(
       const std::string& creative_instance_id,
@@ -148,9 +176,6 @@ class AdsService : public KeyedService {
 
   virtual void ResetAllState(
       const bool should_shutdown) = 0;
-
-  virtual void OnUserModelUpdated(
-      const std::string& id) = 0;
 
   void AddObserver(
       AdsServiceObserver* observer);

@@ -323,6 +323,9 @@ const char kAdsSubdivisionTargeting[] = "adsSubdivisionTargeting";
 const char kAutomaticallyDetectedAdsSubdivisionTargeting[] =
     "automaticallyDetectedAdsSubdivisionTargeting";
 
+const char kShouldShowPublisherAdsOnParticipatingSites[] =
+    "shouldShowPublisherAdsOnParticipatingSites";
+
 }  // namespace
 
 RewardsDOMHandler::RewardsDOMHandler() : weak_factory_(this) {}
@@ -1158,6 +1161,11 @@ void RewardsDOMHandler::GetAdsData(const base::ListValue *args) {
   auto is_enabled = ads_service_->IsEnabled();
   ads_data.SetBoolean("adsEnabled", is_enabled);
 
+  const auto should_show_publisher_ads =
+      ads_service_->ShouldShowPublisherAdsOnParticipatingSites();
+  ads_data.SetBoolean(kShouldShowPublisherAdsOnParticipatingSites,
+      should_show_publisher_ads);
+
   auto ads_per_hour = ads_service_->GetAdsPerHour();
   ads_data.SetInteger("adsPerHour", ads_per_hour);
 
@@ -1392,6 +1400,8 @@ void RewardsDOMHandler::SaveAdsSetting(const base::ListValue* args) {
     const auto is_enabled =
         value == "true" && ads_service_->IsSupportedLocale();
     ads_service_->SetEnabled(is_enabled);
+  } else if (key == kShouldShowPublisherAdsOnParticipatingSites) {
+    ads_service_->SetShowPublisherAdsOnParticipatingSites(value == "true");
   } else if (key == "adsPerHour") {
     ads_service_->SetAdsPerHour(std::stoull(value));
   } else if (key == kAdsSubdivisionTargeting) {

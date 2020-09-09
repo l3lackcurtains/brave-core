@@ -375,6 +375,33 @@ void Client::ResetSeenAdNotifications(
   Save();
 }
 
+void Client::UpdateSeenPublisherAd(
+    const std::string& creative_instance_id,
+    const uint64_t value) {
+  client_state_->seen_publisher_ads.insert({creative_instance_id, value});
+
+  Save();
+}
+
+const std::map<std::string, uint64_t> Client::GetSeenPublisherAds() {
+  return client_state_->seen_publisher_ads;
+}
+
+void Client::ResetSeenPublisherAds(
+    const CreativePublisherAdList& ads) {
+  BLOG(1, "Resetting seen publisher ads");
+
+  for (const auto& ad : ads) {
+    auto seen_publisher_ad =
+        client_state_->seen_publisher_ads.find(ad.creative_instance_id);
+    if (seen_publisher_ad != client_state_->seen_publisher_ads.end()) {
+      client_state_->seen_publisher_ads.erase(seen_publisher_ad);
+    }
+  }
+
+  Save();
+}
+
 void Client::UpdateSeenAdvertiser(
     const std::string& advertiser_id,
     const uint64_t value) {
@@ -442,18 +469,18 @@ Client::GetPageProbabilitiesHistory() {
   return client_state_->page_probabilities_history;
 }
 
-void Client::AppendCreativeSetIdToCreativeSetHistory(
+void Client::AppendCreativeSetHistoryForCreativeSetId(
     const std::string& creative_set_id) {
   if (client_state_->creative_set_history.find(creative_set_id) ==
       client_state_->creative_set_history.end()) {
     client_state_->creative_set_history.insert({creative_set_id, {}});
   }
 
-  const uint64_t timestamp_in_seconds =
+  const uint64_t now_in_seconds =
       static_cast<uint64_t>(base::Time::Now().ToDoubleT());
 
   client_state_->creative_set_history.at(
-      creative_set_id).push_back(timestamp_in_seconds);
+      creative_set_id).push_back(now_in_seconds);
 
   Save();
 }
@@ -463,7 +490,7 @@ Client::GetCreativeSetHistory() const {
   return client_state_->creative_set_history;
 }
 
-void Client::AppendCreativeSetIdToAdConversionHistory(
+void Client::AppendAdConversionHistoryForCreativeSetId(
     const std::string& creative_set_id) {
   DCHECK(!creative_set_id.empty());
   if (creative_set_id.empty()) {
@@ -475,11 +502,11 @@ void Client::AppendCreativeSetIdToAdConversionHistory(
     client_state_->ad_conversion_history.insert({creative_set_id, {}});
   }
 
-  const uint64_t timestamp_in_seconds =
+  const uint64_t now_in_seconds =
       static_cast<uint64_t>(base::Time::Now().ToDoubleT());
 
   client_state_->ad_conversion_history.at(
-      creative_set_id).push_back(timestamp_in_seconds);
+      creative_set_id).push_back(now_in_seconds);
 
   Save();
 }
@@ -489,18 +516,18 @@ Client::GetAdConversionHistory() const {
   return client_state_->ad_conversion_history;
 }
 
-void Client::AppendCampaignIdToCampaignHistory(
+void Client::AppendCampaignHistoryForCampaignId(
     const std::string& campaign_id) {
   if (client_state_->campaign_history.find(campaign_id) ==
       client_state_->campaign_history.end()) {
     client_state_->campaign_history.insert({campaign_id, {}});
   }
 
-  const uint64_t timestamp_in_seconds =
+  const uint64_t now_in_seconds =
       static_cast<uint64_t>(base::Time::Now().ToDoubleT());
 
   client_state_->campaign_history.at(
-      campaign_id).push_back(timestamp_in_seconds);
+      campaign_id).push_back(now_in_seconds);
 
   Save();
 }

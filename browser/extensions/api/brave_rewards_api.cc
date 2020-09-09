@@ -34,6 +34,13 @@ using brave_rewards::RewardsServiceFactory;
 namespace extensions {
 namespace api {
 
+namespace {
+
+const char kShouldShowPublisherAdsOnParticipatingSites[] =
+    "shouldShowPublisherAdsOnParticipatingSites";
+
+}  // namespace
+
 BraveRewardsCreateWalletFunction::BraveRewardsCreateWalletFunction()
     : weak_factory_(this) {
 }
@@ -642,6 +649,9 @@ ExtensionFunction::ResponseAction BraveRewardsSaveAdsSettingFunction::Run() {
       const auto is_enabled =
           params->value == "true" && ads_service_->IsSupportedLocale();
       ads_service_->SetEnabled(is_enabled);
+    } else if (params->key == kShouldShowPublisherAdsOnParticipatingSites) {
+      ads_service_->SetShowPublisherAdsOnParticipatingSites(
+          params->value == "true");
     }
   }
   return RespondNow(NoArguments());

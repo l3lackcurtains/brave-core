@@ -14,6 +14,7 @@
 #include "bat/ads/internal/database/tables/ad_conversions_database_table.h"
 #include "bat/ads/internal/database/tables/categories_database_table.h"
 #include "bat/ads/internal/database/tables/creative_ad_notifications_database_table.h"
+#include "bat/ads/internal/database/tables/creative_publisher_ads_database_table.h"
 #include "bat/ads/internal/database/tables/geo_targets_database_table.h"
 #include "bat/ads/internal/logging.h"
 

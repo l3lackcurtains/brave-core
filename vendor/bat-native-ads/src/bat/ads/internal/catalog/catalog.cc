@@ -69,7 +69,7 @@ CatalogCampaignList Catalog::GetCampaigns() const {
 }
 
 CatalogIssuersInfo Catalog::GetIssuers() const {
-  return catalog_state_->catalog_issuers;
+  return catalog_state_->issuers;
 }
 
 void Catalog::Save(

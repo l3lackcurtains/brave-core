@@ -30,6 +30,10 @@ class ADS_EXPORT AdsClient {
   // Should return |true| if ads is enabled; otherwise, should return |false|
   virtual bool IsEnabled() const = 0;
 
+  // Should return |true| if publisher ads should be shown on participating
+  // sites; otherwise, should return |false|
+  virtual bool ShouldShowPublisherAdsOnParticipatingSites() const = 0;
+
   // Should return |true| if allow ad conversion tracking is enabled; otherwise,
   // should return |false|
   virtual bool ShouldAllowAdConversionTracking() const = 0;

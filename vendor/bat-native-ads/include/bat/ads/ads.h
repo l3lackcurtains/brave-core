@@ -18,6 +18,7 @@
 #include "bat/ads/category_content.h"
 #include "bat/ads/export.h"
 #include "bat/ads/mojom.h"
+#include "bat/ads/publisher_ads.h"
 #include "bat/ads/result.h"
 #include "bat/ads/statement_info.h"
 
@@ -30,6 +31,13 @@ using RemoveAllHistoryCallback = std::function<void(const Result)>;
 
 using GetTransactionHistoryCallback =
     std::function<void(const bool, const StatementInfo&)>;
+
+using GetPublisherAdsCallback = std::function<void(const Result,
+    const std::string&, const std::vector<std::string>&, const PublisherAds&)>;
+using GetPublisherAdsToPreCacheCallback =
+    std::function<void(const Result, const PublisherAds&)>;
+using CanShowPublisherAdsCallback =
+    std::function<void(const std::string&, const bool)>;
 
 // |_environment| indicates that URL requests should use production, staging or
 // development servers but can be overridden via command-line arguments
@@ -78,6 +86,12 @@ class ADS_EXPORT Ads {
   // to |FAILED|
   virtual void Shutdown(
       ShutdownCallback callback) = 0;
+
+  // Should be called to remove all cached history. The callback takes one
+  // argument — |Result| should be set to |SUCCESS| if successful; otherwise,
+  // should be set to |FAILED|
+  virtual void RemoveAllHistory(
+      RemoveAllHistoryCallback callback) = 0;
 
   // Should be called when the user implicitly changes the locale of their
   // operating system. This call is not required if the operating system
@@ -144,10 +158,33 @@ class ADS_EXPORT Ads {
   virtual void OnTabClosed(
       const int32_t tab_id) = 0;
 
+  // Should be called to update the ad rewards UI. |should_reconcile| should be
+  // set to |true| to reconcile with the server, i.e. after a grant is claimed
+  virtual void UpdateAdRewards(
+      const bool should_reconcile) = 0;
+
   // Should be called to report when the wallet has been updated
   virtual void OnWalletUpdated(
       const std::string& payment_id,
       const std::string& recovery_seed_base64) = 0;
+
+  // Should be called when user model has been updated in the
+  // |BraveUserModelInstaller| component
+  virtual void OnUserModelUpdated(
+      const std::string& id) = 0;
+
+  // Should be called to get ads history. Returns |AdsHistory|
+  virtual AdsHistory GetAdsHistory(
+      const AdsHistory::FilterType filter_type,
+      const AdsHistory::SortType sort_type,
+      const uint64_t from_timestamp,
+      const uint64_t to_timestamp) = 0;
+
+  // Should be called to get transaction history. The callback takes one
+  // argument — |StatementInfo| which contains a list of |TransactionInfo|
+  // transactions and associated earned ad rewards
+  virtual void GetTransactionHistory(
+      GetTransactionHistoryCallback callback) = 0;
 
   // Should be called to get the notification specified by |uuid|. Returns
   // |true| and |info| if the notification exists; otherwise, should return
@@ -162,29 +199,25 @@ class ADS_EXPORT Ads {
       const std::string& uuid,
       const AdNotificationEventType event_type) = 0;
 
-  // Should be called to remove all cached history. The callback takes one
-  // argument — |Result| should be set to |SUCCESS| if successful; otherwise,
-  // should be set to |FAILED|
-  virtual void RemoveAllHistory(
-      RemoveAllHistoryCallback callback) = 0;
+  // Should be called to get a list of eligible publisher ads
+  virtual void GetPublisherAds(
+      const std::string& url,
+      const std::vector<std::string>& sizes,
+      GetPublisherAdsCallback callback) = 0;
 
-  // Should be called to update the ad rewards UI. |should_reconcile| should be
-  // set to |true| to reconcile with the server, i.e. after a grant is claimed
-  virtual void UpdateAdRewards(
-      const bool should_reconcile) = 0;
+  // Should be called when a user implicitly views or clicks a publisher ad
+  virtual void OnPublisherAdEvent(
+      const PublisherAdInfo& publisher_ad,
+      const PublisherAdEventType event_type) = 0;
 
-  // Should be called to get ads history. Returns |AdsHistory|
-  virtual AdsHistory GetAdsHistory(
-      const AdsHistory::FilterType filter_type,
-      const AdsHistory::SortType sort_type,
-      const uint64_t from_timestamp,
-      const uint64_t to_timestamp) = 0;
+  // Should be called to get a list of publisher ads to pre cache
+  virtual void GetPublisherAdsToPreCache(
+      GetPublisherAdsToPreCacheCallback callback) = 0;
 
-  // Should be called to get transaction history. The callback takes one
-  // argument — |StatementInfo| which contains a list of |TransactionInfo|
-  // transactions and associated earned ad rewards
-  virtual void GetTransactionHistory(
-      GetTransactionHistoryCallback callback) = 0;
+  // Should be called to check if the site supports publisher ads
+  virtual void CanShowPublisherAds(
+      const std::string& url,
+      CanShowPublisherAdsCallback callback) = 0;
 
   // Should be called to indicate interest in the specified ad. This is a
   // toggle, so calling it again returns the setting to the neutral state
@@ -229,11 +262,6 @@ class ADS_EXPORT Ads {
       const std::string& creative_instance_id,
       const std::string& creative_set_id,
       const bool flagged) = 0;
-
-  // Should be called when user model has been updated in the
-  // |BraveUserModelInstaller| component
-  virtual void OnUserModelUpdated(
-      const std::string& id) = 0;
 
  private:
   // Not copyable, not assignable

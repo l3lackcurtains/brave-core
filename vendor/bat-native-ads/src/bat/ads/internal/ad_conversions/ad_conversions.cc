@@ -77,8 +77,8 @@ void AdConversions::MaybeConvert(
   BLOG(1, "Checking visited URL for ad conversions");
 
   database::table::AdConversions database_table(ads_);
-  database_table.GetAdConversions(std::bind(&AdConversions::OnGetAdConversions,
-      this, url, _1, _2));
+  database_table.Get(std::bind(&AdConversions::OnGetAdConversions, this,
+      url, _1, _2));
 }
 
 void AdConversions::StartTimerIfReady() {
@@ -207,7 +207,8 @@ void AdConversions::AddItemToQueue(
     return;
   }
 
-  ads_->get_client()->AppendCreativeSetIdToAdConversionHistory(creative_set_id);
+  ads_->get_client()->AppendAdConversionHistoryForCreativeSetId(
+        creative_set_id);
 
   AdConversionQueueItemInfo ad_conversion;
 

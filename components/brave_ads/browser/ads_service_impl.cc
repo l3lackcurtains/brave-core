@@ -268,6 +268,12 @@ void AdsServiceImpl::SetEnabled(
   rewards_service_->OnAdsEnabled(is_enabled);
 }
 
+void AdsServiceImpl::SetShowPublisherAdsOnParticipatingSites(
+    const bool should_show) {
+  SetBooleanPref(prefs::kShouldShowPublisherAdsOnParticipatingSites,
+      should_show);
+}
+
 void AdsServiceImpl::SetAllowAdConversionTracking(
     const bool should_allow) {
   SetBooleanPref(prefs::kShouldAllowAdConversionTracking, should_allow);
@@ -393,6 +399,73 @@ void AdsServiceImpl::UpdateAdRewards(
   }
 
   bat_ads_->UpdateAdRewards(should_reconcile);
+}
+
+void AdsServiceImpl::GetPublisherAds(
+    const std::string& url,
+    const std::vector<std::string>& sizes,
+    OnGetPublisherAdsCallback callback) {
+  if (!connected()) {
+    return;
+  }
+
+  bat_ads_->GetPublisherAds(url, sizes,
+      base::BindOnce(&AdsServiceImpl::OnGetPublisherAds, AsWeakPtr(),
+          std::move(callback)));
+}
+
+void AdsServiceImpl::GetPublisherAdsToPreCache(
+    OnGetPublisherAdsToPreCacheCallback callback) {
+  if (!connected()) {
+    return;
+  }
+
+  bat_ads_->GetPublisherAdsToPreCache(
+      base::BindOnce(&AdsServiceImpl::OnGetPublisherAdsToPreCache, AsWeakPtr(),
+          std::move(callback)));
+}
+
+void AdsServiceImpl::CanShowPublisherAds(
+    const std::string& url,
+    OnCanShowPublisherAdsCallback callback) {
+  if (!connected()) {
+    return;
+  }
+
+  bat_ads_->CanShowPublisherAds(url,
+      base::BindOnce(&AdsServiceImpl::OnCanShowPublisherAds,
+          AsWeakPtr(), std::move(callback)));
+}
+
+void AdsServiceImpl::OnPublisherAdEvent(
+    const PublisherAdInfo& info,
+    const ads::PublisherAdEventType event_type) {
+  if (!connected()) {
+    return;
+  }
+
+  ads::PublisherAdInfo ad;
+  ad.creative_instance_id = info.creative_instance_id;
+  ad.creative_set_id = info.creative_set_id;
+  ad.category = info.category;
+  ad.creative_url = info.creative_url;
+  ad.size = info.size;
+  ad.target_url = info.target_url;
+
+  const std::string json = ad.ToJson();
+
+  switch (event_type) {
+    case ads::PublisherAdEventType::kViewed: {
+      bat_ads_->OnPublisherAdEvent(json, ads::PublisherAdEventType::kViewed);
+      break;
+    }
+
+    case ads::PublisherAdEventType::kClicked: {
+      bat_ads_->OnPublisherAdEvent(json, ads::PublisherAdEventType::kClicked);
+      OpenNewTabWithUrl(ad.target_url);
+      break;
+    }
+  }
 }
 
 void AdsServiceImpl::GetAdsHistory(
@@ -1141,6 +1214,61 @@ bool AdsServiceImpl::CanShowBackgroundNotifications() const {
   return NotificationHelper::GetInstance()->CanShowBackgroundNotifications();
 }
 
+void AdsServiceImpl::OnGetPublisherAds(
+    OnGetPublisherAdsCallback callback,
+    const std::string& url,
+    const std::vector<std::string>& sizes,
+    const std::string& json) {
+  ads::PublisherAds ads;
+  ads.FromJson(json);
+
+  base::ListValue list;
+  for (const auto& entry : ads.entries) {
+    base::DictionaryValue dictionary;
+    dictionary.SetKey("creativeInstanceId",
+        base::Value(entry.creative_instance_id));
+    dictionary.SetKey("creativeSetId", base::Value(entry.creative_set_id));
+    dictionary.SetKey("category", base::Value(entry.category));
+    dictionary.SetKey("creativeUrl", base::Value(entry.creative_url));
+    dictionary.SetKey("size", base::Value(entry.size));
+    dictionary.SetKey("targetUrl", base::Value(entry.target_url));
+
+    list.Append(std::move(dictionary));
+  }
+
+  std::move(callback).Run(url, sizes, list);
+}
+
+void AdsServiceImpl::OnGetPublisherAdsToPreCache(
+    OnGetPublisherAdsToPreCacheCallback callback,
+    const std::string& json) {
+  ads::PublisherAds ads;
+  ads.FromJson(json);
+
+  base::ListValue list;
+  for (const auto& entry : ads.entries) {
+    base::DictionaryValue dictionary;
+    dictionary.SetKey("creativeInstanceId",
+        base::Value(entry.creative_instance_id));
+    dictionary.SetKey("creativeSetId", base::Value(entry.creative_set_id));
+    dictionary.SetKey("category", base::Value(entry.category));
+    dictionary.SetKey("creativeUrl", base::Value(entry.creative_url));
+    dictionary.SetKey("size", base::Value(entry.size));
+    dictionary.SetKey("targetUrl", base::Value(entry.target_url));
+
+    list.Append(std::move(dictionary));
+  }
+
+  std::move(callback).Run(list);
+}
+
+void AdsServiceImpl::OnCanShowPublisherAds(
+    OnCanShowPublisherAdsCallback callback,
+    const std::string& url,
+    const bool can_show) {
+  std::move(callback).Run(url, can_show);
+}
+
 void AdsServiceImpl::OnGetAdsHistory(
     OnGetAdsHistoryCallback callback,
     const std::string& json) {
@@ -1185,7 +1313,6 @@ void AdsServiceImpl::OnGetAdsHistory(
 
     base::DictionaryValue ad_history_dictionary;
     ad_history_dictionary.SetKey("uuid", base::Value(entry.uuid));
-    ad_history_dictionary.SetKey("parentUuid", base::Value(entry.parent_uuid));
     ad_history_dictionary.SetPath("adContent",
         std::move(ad_content_dictionary));
     ad_history_dictionary.SetPath("categoryContent",

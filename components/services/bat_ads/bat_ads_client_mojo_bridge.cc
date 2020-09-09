@@ -43,6 +43,17 @@ bool BatAdsClientMojoBridge::IsEnabled() const {
   return is_enabled;
 }
 
+bool
+BatAdsClientMojoBridge::ShouldShowPublisherAdsOnParticipatingSites() const {
+  if (!connected()) {
+    return false;
+  }
+
+  bool should_show;
+  bat_ads_client_->ShouldShowPublisherAdsOnParticipatingSites(&should_show);
+  return should_show;
+}
+
 bool BatAdsClientMojoBridge::ShouldAllowAdConversionTracking() const {
   if (!connected()) {
     return false;

@@ -22,6 +22,11 @@ enum BraveAdsAdNotificationEventType {
   kTimedOut
 };
 
+enum BraveAdsPublisherAdEventType {
+  kViewed = 0,
+  kClicked
+};
+
 enum BraveAdsUrlRequestMethod {
   GET = 0,
   PUT,

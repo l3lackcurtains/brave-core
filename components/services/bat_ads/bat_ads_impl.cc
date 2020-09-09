@@ -18,6 +18,8 @@
 
 using std::placeholders::_1;
 using std::placeholders::_2;
+using std::placeholders::_3;
+using std::placeholders::_4;
 
 namespace bat_ads {
 
@@ -59,6 +61,16 @@ void BatAdsImpl::Shutdown(
 
   auto shutdown_callback = std::bind(BatAdsImpl::OnShutdown, holder, _1);
   ads_->Shutdown(shutdown_callback);
+}
+
+void BatAdsImpl::RemoveAllHistory(
+    RemoveAllHistoryCallback callback) {
+  auto* holder = new CallbackHolder<RemoveAllHistoryCallback>(AsWeakPtr(),
+      std::move(callback));
+
+  auto remove_all_history_callback =
+      std::bind(BatAdsImpl::OnRemoveAllHistory, holder, _1);
+  ads_->RemoveAllHistory(remove_all_history_callback);
 }
 
 void BatAdsImpl::ChangeLocale(
@@ -118,30 +130,6 @@ void BatAdsImpl::OnTabClosed(
   ads_->OnTabClosed(tab_id);
 }
 
-void BatAdsImpl::GetAdNotification(
-    const std::string& uuid,
-    GetAdNotificationCallback callback) {
-  ads::AdNotificationInfo notification;
-  ads_->GetAdNotification(uuid, &notification);
-  std::move(callback).Run(notification.ToJson());
-}
-
-void BatAdsImpl::OnAdNotificationEvent(
-    const std::string& uuid,
-    const ads::AdNotificationEventType event_type) {
-  ads_->OnAdNotificationEvent(uuid, event_type);
-}
-
-void BatAdsImpl::RemoveAllHistory(
-    RemoveAllHistoryCallback callback) {
-  auto* holder = new CallbackHolder<RemoveAllHistoryCallback>(AsWeakPtr(),
-      std::move(callback));
-
-  auto remove_all_history_callback =
-      std::bind(BatAdsImpl::OnRemoveAllHistory, holder, _1);
-  ads_->RemoveAllHistory(remove_all_history_callback);
-}
-
 void BatAdsImpl::OnWalletUpdated(
     const std::string& payment_id,
     const std::string& recovery_seed_base64) {
@@ -151,6 +139,11 @@ void BatAdsImpl::OnWalletUpdated(
 void BatAdsImpl::UpdateAdRewards(
       const bool should_reconcile) {
   ads_->UpdateAdRewards(should_reconcile);
+}
+
+void BatAdsImpl::OnUserModelUpdated(
+    const std::string& id) {
+  ads_->OnUserModelUpdated(id);
 }
 
 void BatAdsImpl::GetAdsHistory(
@@ -172,6 +165,65 @@ void BatAdsImpl::GetTransactionHistory(
 
   ads_->GetTransactionHistory(std::bind(BatAdsImpl::OnGetTransactionHistory,
       holder, _1, _2));
+}
+
+void BatAdsImpl::GetAdNotification(
+    const std::string& uuid,
+    GetAdNotificationCallback callback) {
+  ads::AdNotificationInfo notification;
+  ads_->GetAdNotification(uuid, &notification);
+  std::move(callback).Run(notification.ToJson());
+}
+
+void BatAdsImpl::OnAdNotificationEvent(
+    const std::string& uuid,
+    const ads::AdNotificationEventType event_type) {
+  ads_->OnAdNotificationEvent(uuid, event_type);
+}
+
+void BatAdsImpl::GetPublisherAds(
+    const std::string& url,
+    const std::vector<std::string>& sizes,
+    GetPublisherAdsCallback callback) {
+  auto* holder = new CallbackHolder<GetPublisherAdsCallback>(AsWeakPtr(),
+      std::move(callback));
+
+  auto get_publisher_ads_callback =
+      std::bind(BatAdsImpl::OnGetPublisherAds, holder, _1, _2, _3, _4);
+  ads_->GetPublisherAds(url, sizes, get_publisher_ads_callback);
+}
+
+void BatAdsImpl::OnPublisherAdEvent(
+    const std::string& json,
+    const ads::PublisherAdEventType event_type) {
+  ads::PublisherAdInfo publisher_ad;
+  if (publisher_ad.FromJson(json) != ads::Result::SUCCESS) {
+    NOTREACHED();
+    return;
+  }
+
+  ads_->OnPublisherAdEvent(publisher_ad, event_type);
+}
+
+void BatAdsImpl::GetPublisherAdsToPreCache(
+    GetPublisherAdsToPreCacheCallback callback) {
+  auto* holder = new CallbackHolder<GetPublisherAdsToPreCacheCallback>(
+      AsWeakPtr(), std::move(callback));
+
+  auto get_publisher_ads_to_pre_fetch_callback =
+      std::bind(BatAdsImpl::OnGetPublisherAdsToPreCache, holder, _1, _2);
+  ads_->GetPublisherAdsToPreCache(get_publisher_ads_to_pre_fetch_callback);
+}
+
+void BatAdsImpl::CanShowPublisherAds(
+    const std::string& url,
+    CanShowPublisherAdsCallback callback) {
+  auto* holder = new CallbackHolder<CanShowPublisherAdsCallback>(AsWeakPtr(),
+      std::move(callback));
+
+  auto can_show_publisher_ads_callback =
+      std::bind(BatAdsImpl::OnCanShowPublisherAds, holder, _1, _2);
+  ads_->CanShowPublisherAds(url, can_show_publisher_ads_callback);
 }
 
 void BatAdsImpl::ToggleAdThumbUp(
@@ -232,11 +284,6 @@ void BatAdsImpl::ToggleFlagAd(
   std::move(callback).Run(creative_instance_id, flagged_result);
 }
 
-void BatAdsImpl::OnUserModelUpdated(
-    const std::string& id) {
-  ads_->OnUserModelUpdated(id);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void BatAdsImpl::OnInitialize(
@@ -264,6 +311,41 @@ void BatAdsImpl::OnRemoveAllHistory(
     const int32_t result) {
   if (holder->is_valid()) {
     std::move(holder->get()).Run((ads::Result)result);
+  }
+
+  delete holder;
+}
+
+void BatAdsImpl::OnGetPublisherAds(
+    CallbackHolder<GetPublisherAdsCallback>* holder,
+    const int32_t result,
+    const std::string& url,
+    const std::vector<std::string>& sizes,
+    const ads::PublisherAds& ads) {
+  if (holder->is_valid()) {
+    std::move(holder->get()).Run(url, sizes, ads.ToJson());
+  }
+
+  delete holder;
+}
+
+void BatAdsImpl::OnGetPublisherAdsToPreCache(
+    CallbackHolder<GetPublisherAdsToPreCacheCallback>* holder,
+    const int32_t result,
+    const ads::PublisherAds& ads) {
+  if (holder->is_valid()) {
+    std::move(holder->get()).Run(ads.ToJson());
+  }
+
+  delete holder;
+}
+
+void BatAdsImpl::OnCanShowPublisherAds(
+    CallbackHolder<CanShowPublisherAdsCallback>* holder,
+    const std::string& url,
+    const bool can_show) {
+  if (holder->is_valid()) {
+    std::move(holder->get()).Run(url, can_show);
   }
 
   delete holder;

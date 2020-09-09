@@ -21,7 +21,7 @@ struct CatalogCampaignInfo {
       const CatalogCampaignInfo& info);
   ~CatalogCampaignInfo();
 
-  std::string campaign_id;
+  std::string id;
   unsigned int priority = 0;
   std::string name;
   std::string start_at;

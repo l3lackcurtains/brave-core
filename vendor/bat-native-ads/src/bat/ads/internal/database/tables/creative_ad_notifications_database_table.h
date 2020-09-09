@@ -40,11 +40,11 @@ class CreativeAdNotifications : public Table {
       const CreativeAdNotificationList& creative_ad_notifications,
       ResultCallback callback);
 
-  void GetCreativeAdNotifications(
+  void GetForCategories(
       const classification::CategoryList& categories,
       GetCreativeAdNotificationsCallback callback);
 
-  void GetAllCreativeAdNotifications(
+  void GetAll(
       GetCreativeAdNotificationsCallback callback);
 
   void set_batch_size(

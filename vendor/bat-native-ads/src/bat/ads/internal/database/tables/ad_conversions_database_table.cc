@@ -50,7 +50,7 @@ void AdConversions::Save(
       std::bind(&OnResultCallback, _1, callback));
 }
 
-void AdConversions::GetAdConversions(
+void AdConversions::Get(
     GetAdConversionsCallback callback) {
   const std::string query = base::StringPrintf(
       "SELECT "
@@ -83,7 +83,7 @@ void AdConversions::GetAdConversions(
       std::bind(&AdConversions::OnGetAdConversions, this, _1, callback));
 }
 
-void AdConversions::PurgeExpiredAdConversions(
+void AdConversions::PurgeExpired(
     ResultCallback callback) {
   DBTransactionPtr transaction = DBTransaction::New();
 

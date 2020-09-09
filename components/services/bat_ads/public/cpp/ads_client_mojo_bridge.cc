@@ -41,6 +41,19 @@ void AdsClientMojoBridge::IsEnabled(
   std::move(callback).Run(ads_client_->IsEnabled());
 }
 
+bool AdsClientMojoBridge::ShouldShowPublisherAdsOnParticipatingSites(
+    bool* out_should_show) {
+  DCHECK(out_should_show);
+  *out_should_show = ads_client_->ShouldShowPublisherAdsOnParticipatingSites();
+  return true;
+}
+
+void AdsClientMojoBridge::ShouldShowPublisherAdsOnParticipatingSites(
+    ShouldShowPublisherAdsOnParticipatingSitesCallback callback) {
+  std::move(callback).Run(
+      ads_client_->ShouldShowPublisherAdsOnParticipatingSites());
+}
+
 bool AdsClientMojoBridge::ShouldAllowAdConversionTracking(
     bool* out_should_allow) {
   DCHECK(out_should_allow);

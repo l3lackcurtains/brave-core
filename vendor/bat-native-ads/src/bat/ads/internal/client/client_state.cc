@@ -81,7 +81,6 @@ Result ClientState::FromJson(
     }
   }
 
-
   if (document.HasMember("adUUID")) {
     ad_uuid = document["adUUID"].GetString();
   }
@@ -91,6 +90,14 @@ Result ClientState::FromJson(
         document["adsUUIDSeen"].GetObject()) {
       seen_ad_notifications.insert({seen_ad_notification.name.GetString(),
           seen_ad_notification.value.GetInt64()});
+    }
+  }
+
+  if (document.HasMember("publisherAdsUUIDSeen")) {
+    for (const auto& seen_publisher_ad :
+        document["publisherAdsUUIDSeen"].GetObject()) {
+      seen_publisher_ads.insert({seen_publisher_ad.name.GetString(),
+          seen_publisher_ad.value.GetInt64()});
     }
   }
 
@@ -217,6 +224,14 @@ void SaveToJson(JsonWriter* writer, const ClientState& state) {
   for (const auto& seen_ad_notification : state.seen_ad_notifications) {
     writer->String(seen_ad_notification.first.c_str());
     writer->Uint64(seen_ad_notification.second);
+  }
+  writer->EndObject();
+
+  writer->String("publisherAdsUUIDSeen");
+  writer->StartObject();
+  for (const auto& publisher_ad_uuid_seen : state.seen_publisher_ads) {
+    writer->String(publisher_ad_uuid_seen.first.c_str());
+    writer->Uint64(publisher_ad_uuid_seen.second);
   }
   writer->EndObject();
 

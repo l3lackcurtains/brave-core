@@ -44,6 +44,7 @@ export const defaultState: Rewards.State = {
   tipsLoad: false,
   adsData: {
     adsEnabled: false,
+    shouldShowPublisherAdsOnParticipatingSites: false,
     adsPerHour: 0,
     adsSubdivisionTargeting: '',
     automaticallyDetectedAdsSubdivisionTargeting: '',

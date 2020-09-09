@@ -11,8 +11,8 @@
 namespace ads {
 
 struct CatalogAdNotificationPayloadInfo {
-  std::string body;
   std::string title;
+  std::string body;
   std::string target_url;
 };
 

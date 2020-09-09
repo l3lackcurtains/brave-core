@@ -35,10 +35,10 @@ class AdConversions : public Table {
       const AdConversionList& ad_conversions,
       ResultCallback callback);
 
-  void GetAdConversions(
+  void Get(
       GetAdConversionsCallback callback);
 
-  void PurgeExpiredAdConversions(
+  void PurgeExpired(
       ResultCallback callback);
 
   std::string get_table_name() const override;

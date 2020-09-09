@@ -144,6 +144,7 @@ const rewardsReducer: Reducer<Rewards.State | undefined> = (state: Rewards.State
       }
 
       state.adsData.adsEnabled = action.payload.adsData.adsEnabled
+      state.adsData.shouldShowPublisherAdsOnParticipatingSites = action.payload.adsData.shouldShowPublisherAdsOnParticipatingSites
       state.adsData.adsPerHour = action.payload.adsData.adsPerHour
       state.adsData.adsSubdivisionTargeting = action.payload.adsData.adsSubdivisionTargeting
       state.adsData.automaticallyDetectedAdsSubdivisionTargeting = action.payload.adsData.automaticallyDetectedAdsSubdivisionTargeting

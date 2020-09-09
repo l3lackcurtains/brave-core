@@ -31,6 +31,8 @@ class BatAdsClientMojoBridge
   // AdsClient implementation
   bool IsEnabled() const override;
 
+  bool ShouldShowPublisherAdsOnParticipatingSites() const override;
+
   bool ShouldAllowAdConversionTracking() const override;
 
   bool CanShowBackgroundNotifications() const override;

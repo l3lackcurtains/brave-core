@@ -47,6 +47,10 @@ class Bundle {
 
   void OnCreativeAdNotificationsSaved(
       const Result result);
+
+  void OnCreativePublisherAdsSaved(
+      const Result result);
+
   void OnPurgedExpiredAdConversions(
       const Result result);
   void OnAdConversionsSaved(

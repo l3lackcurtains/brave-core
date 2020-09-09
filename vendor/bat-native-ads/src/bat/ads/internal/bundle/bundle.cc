@@ -16,6 +16,7 @@
 #include "bat/ads/internal/catalog/catalog.h"
 #include "bat/ads/internal/database/tables/ad_conversions_database_table.h"
 #include "bat/ads/internal/database/tables/creative_ad_notifications_database_table.h"
+#include "bat/ads/internal/database/tables/creative_publisher_ads_database_table.h"
 #include "bat/ads/internal/logging.h"
 #include "bat/ads/internal/platform/platform_helper.h"
 #include "bat/ads/internal/time_util.h"
@@ -50,11 +51,13 @@ bool Bundle::UpdateFromCatalog(
   database_table.Save(bundle_state->creative_ad_notifications,
       std::bind(&Bundle::OnCreativeAdNotificationsSaved, this, _1));
 
+  // database::table::CreativePublisherAds publisher_ads_database_table(ads_);
+  // publisher_ads_database_table.Save(bundle_state->creative_publisher_ads,
+  //     std::bind(&Bundle::OnCreativePublisherAdsSaved, this, _1));
+
   database::table::AdConversions ad_conversions_database_table(ads_);
-
-  ad_conversions_database_table.PurgeExpiredAdConversions(
+  ad_conversions_database_table.PurgeExpired(
       std::bind(&Bundle::OnPurgedExpiredAdConversions, this, _1));
-
   ad_conversions_database_table.Save(bundle_state->ad_conversions,
       std::bind(&Bundle::OnAdConversionsSaved, this, _1));
 
@@ -100,7 +103,11 @@ std::unique_ptr<BundleState> Bundle::GenerateFromCatalog(
   // TODO(Terry Mancey): Refactor function to use callbacks
 
   CreativeAdNotificationList creative_ad_notifications;
+  CreativePublisherAdMap creative_publisher_ads;
   AdConversionList ad_conversions;
+
+  const std::string platform_name =
+      PlatformHelper::GetInstance()->GetPlatformName();
 
   // Campaigns
   for (const auto& campaign : catalog.GetCampaigns()) {
@@ -122,21 +129,18 @@ std::unique_ptr<BundleState> Bundle::GenerateFromCatalog(
       uint64_t entries = 0;
 
       // Ad notification creatives
-      for (const auto& creative : creative_set.creative_ad_notifications) {
+      for (const auto& creative : creative_set.ad_notification_creatives) {
         if (!DoesOsSupportCreativeSet(creative_set)) {
-          const std::string platform_name =
-              PlatformHelper::GetInstance()->GetPlatformName();
-
-          BLOG(1, "Creative set id " << creative_set.creative_set_id
-              << " does not support " << platform_name);
+          BLOG(1, "Creative set id " << creative_set.id << " does not support "
+              << platform_name);
 
           continue;
         }
 
         CreativeAdNotificationInfo info;
         info.creative_instance_id = creative.creative_instance_id;
-        info.creative_set_id = creative_set.creative_set_id;
-        info.campaign_id = campaign.campaign_id;
+        info.creative_set_id = creative_set.id;
+        info.campaign_id = campaign.id;
 
         base::Time start_at_time;
         if (base::Time::FromUTCString(campaign.start_at.c_str(),
@@ -144,10 +148,10 @@ std::unique_ptr<BundleState> Bundle::GenerateFromCatalog(
           info.start_at_timestamp =
               static_cast<int64_t>(start_at_time.ToDoubleT());
         } else {
-          info.start_at_timestamp = std::numeric_limits<int64_t>::min();
+          BLOG(1, "Creative set id " << creative_set.id << " has an invalid "
+              "startAt timestamp");
 
-          BLOG(1, "Creative set id " << creative_set.creative_set_id
-              << " has an invalid startAt timestamp");
+          continue;
         }
 
         base::Time end_at_time;
@@ -156,17 +160,16 @@ std::unique_ptr<BundleState> Bundle::GenerateFromCatalog(
           info.end_at_timestamp =
               static_cast<int64_t>(end_at_time.ToDoubleT());
         } else {
-          info.end_at_timestamp = std::numeric_limits<int64_t>::max();
+          BLOG(1, "Creative set id " << creative_set.id << " has an invalid "
+              "endAt timestamp");
 
-          BLOG(1, "Creative set id " << creative_set.creative_set_id
-              << " has an invalid endAt timestamp");
+          continue;
         }
 
         info.daily_cap = campaign.daily_cap;
         info.advertiser_id = campaign.advertiser_id;
         info.priority = campaign.priority;
-        info.conversion =
-            creative_set.ad_conversions.size() != 0 ? true : false;
+        info.conversion = creative_set.ad_conversions.empty() ? false : true;
         info.per_day = creative_set.per_day;
         info.total_max = creative_set.total_max;
         info.geo_targets = geo_targets;
@@ -183,8 +186,8 @@ std::unique_ptr<BundleState> Bundle::GenerateFromCatalog(
                   base::SPLIT_WANT_NONEMPTY);
 
           if (segment_name_hierarchy.empty()) {
-            BLOG(1, "creative set id " << creative_set.creative_set_id
-                << " segment name should not be empty");
+            BLOG(1, "creative set id " << creative_set.id << " segment name "
+                "should not be empty");
 
             continue;
           }
@@ -202,9 +205,104 @@ std::unique_ptr<BundleState> Bundle::GenerateFromCatalog(
         }
       }
 
+      // Publisher ad creatives
+      for (const auto& creative : creative_set.publisher_ad_creatives) {
+        if (!DoesOsSupportCreativeSet(creative_set)) {
+          BLOG(1, "Creative set id " << creative_set.id << " does not support "
+              << platform_name);
+
+          continue;
+        }
+
+        CreativePublisherAdInfo info;
+        info.creative_instance_id = creative.creative_instance_id;
+        info.creative_set_id = creative_set.id;
+        info.campaign_id = campaign.id;
+
+        base::Time start_at_time;
+        if (base::Time::FromUTCString(campaign.start_at.c_str(),
+            &start_at_time)) {
+          info.start_at_timestamp =
+              static_cast<int64_t>(start_at_time.ToDoubleT());
+        } else {
+          BLOG(1, "Creative set id " << creative_set.id << " has an invalid "
+              "startAt timestamp");
+
+          continue;
+        }
+
+        base::Time end_at_time;
+        if (base::Time::FromUTCString(campaign.end_at.c_str(),
+            &end_at_time)) {
+          info.end_at_timestamp =
+              static_cast<int64_t>(end_at_time.ToDoubleT());
+        } else {
+          BLOG(1, "Creative set id " << creative_set.id << " has an invalid "
+              "endAt timestamp");
+
+          continue;
+        }
+
+        info.daily_cap = campaign.daily_cap;
+        info.advertiser_id = campaign.advertiser_id;
+        info.priority = campaign.priority;
+        info.conversion =
+            creative_set.ad_conversions.size() != 0 ? true : false;
+        info.per_day = creative_set.per_day;
+        info.total_max = creative_set.total_max;
+        info.geo_targets = geo_targets;
+        info.size = creative.payload.size;
+        info.creative_url = creative.payload.creative_url;
+        info.target_url = creative.payload.target_url;
+
+        // Sites
+        std::vector<std::string> channels;
+        for (const auto& channel : creative.channels) {
+          if (std::find(channels.begin(), channels.end(), channel.name) !=
+              channels.end()) {
+            continue;
+          }
+
+          channels.push_back(channel.name);
+        }
+        info.channels = channels;
+
+        // Segments
+        for (const auto& segment : creative_set.segments) {
+          auto segment_name = base::ToLowerASCII(segment.name);
+
+          std::vector<std::string> segment_name_hierarchy =
+              base::SplitString(segment_name, "-", base::KEEP_WHITESPACE,
+                  base::SPLIT_WANT_NONEMPTY);
+
+          if (segment_name_hierarchy.empty()) {
+            BLOG(1, "creative set id " << creative_set.id << " segment name "
+                "should not be empty");
+
+            continue;
+          }
+
+          if (creative_publisher_ads.find(segment_name) ==
+              creative_publisher_ads.end()) {
+            creative_publisher_ads.insert({segment_name, {}});
+          }
+          creative_publisher_ads.at(segment_name).push_back(info);
+          entries++;
+
+          auto top_level_segment_name = segment_name_hierarchy.front();
+          if (top_level_segment_name != segment_name) {
+            if (creative_publisher_ads.find(top_level_segment_name) ==
+                creative_publisher_ads.end()) {
+              creative_publisher_ads.insert({top_level_segment_name, {}});
+            }
+            creative_publisher_ads.at(top_level_segment_name).push_back(info);
+            entries++;
+          }
+        }
+      }
+
       if (entries == 0) {
-        BLOG(1, "creative set id " << creative_set.creative_set_id
-            << " has no entries");
+        BLOG(1, "creative set id " << creative_set.id << " has no entries");
 
         continue;
       }
@@ -222,6 +320,7 @@ std::unique_ptr<BundleState> Bundle::GenerateFromCatalog(
   state->catalog_ping = catalog.GetPing();
   state->catalog_last_updated = base::Time::Now();
   state->creative_ad_notifications = creative_ad_notifications;
+  state->creative_publisher_ads = creative_publisher_ads;
   state->ad_conversions = ad_conversions;
 
   return state;
@@ -254,6 +353,16 @@ void Bundle::OnCreativeAdNotificationsSaved(
   }
 
   BLOG(3, "Successfully saved creative ad notifications state");
+}
+
+void Bundle::OnCreativePublisherAdsSaved(
+    const Result result) {
+  if (result != SUCCESS) {
+    BLOG(0, "Failed to save creative publisher ads state");
+    return;
+  }
+
+  BLOG(3, "Successfully saved creative publisher ads state");
 }
 
 void Bundle::OnPurgedExpiredAdConversions(

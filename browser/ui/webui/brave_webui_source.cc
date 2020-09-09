@@ -372,6 +372,7 @@ void CustomizeWebUIHTMLSource(const std::string &name,
     }, {
       std::string("rewards"), {
         { "adsCurrentEarnings",  IDS_BRAVE_REWARDS_LOCAL_ADS_CURRENT_EARNINGS },
+        { "adsDeliveryPermissions", IDS_BRAVE_REWARDS_LOCAL_ADS_DELIVERY_PERMISSIONS },                                                        // NOLINT
         { "adsDesc",  IDS_BRAVE_REWARDS_LOCAL_ADS_DESC },
         { "adsDisabledTextOne",  IDS_BRAVE_REWARDS_LOCAL_ADS_DISABLED_TEXT_ONE },                // NOLINT
         { "adsDisabledTextTwo",  IDS_BRAVE_REWARDS_LOCAL_ADS_DISABLED_TEXT_TWO },                // NOLINT
@@ -387,6 +388,8 @@ void CustomizeWebUIHTMLSource(const std::string &name,
         { "adsPerHour3",  IDS_BRAVE_REWARDS_LOCAL_ADS_PER_HOUR_3 },
         { "adsPerHour4",  IDS_BRAVE_REWARDS_LOCAL_ADS_PER_HOUR_4 },
         { "adsPerHour5",  IDS_BRAVE_REWARDS_LOCAL_ADS_PER_HOUR_5 },
+        { "adsShowOnParticipatingPublisherSites", IDS_BRAVE_REWARDS_LOCAL_ADS_SHOW_ON_PARTICIPATING_PUBLISHER_SITES },                         // NOLINT
+        { "adsShowOnParticipatingPublisherSitesDescription", IDS_BRAVE_REWARDS_LOCAL_ADS_SHOW_ON_PARTICIPATING_PUBLISHER_SITES_DESCRIPTION },  // NOLINT
         { "adsSubdivisionTargetingTitle",  IDS_BRAVE_REWARDS_LOCAL_ADS_SUBDIVISION_TARGETING_TITLE },  // NOLINT
         { "adsSubdivisionTargetingDescription",  IDS_BRAVE_REWARDS_LOCAL_ADS_SUBDIVISION_TARGETING_DESCRIPTION },  // NOLINT
         { "adsSubdivisionTargetingLearn",  IDS_BRAVE_REWARDS_LOCAL_ADS_SUBDIVISION_TARGETING_LEARN },  // NOLINT
