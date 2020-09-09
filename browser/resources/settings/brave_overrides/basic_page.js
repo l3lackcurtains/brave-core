@@ -11,7 +11,7 @@ import {pageVisibility} from './page_visibility.js'
 
 import '../getting_started_page/getting_started.js'
 import '../brave_default_extensions_page/brave_default_extensions_page.m.js'
-import '../default_brave_shields_page/default_brave_shields_page.m.js'
+import '../default_brave_shields_page/default_brave_shields_page.js'
 import '../social_blocking_page/social_blocking_page.m.js'
 import '../brave_sync_page/brave_sync_page.js'
 import '../brave_help_tips_page/brave_help_tips_page.m.js'
@@ -124,7 +124,7 @@ RegisterPolymerTemplateModifications({
       sectionShields.innerHTML = `
         <settings-section page-title="${loadTimeData.getString('braveShieldsTitle')}"
             section="shields">
-          <settings-default-brave-shields-page  prefs="{{prefs}}"></settings-default-brave-shields-page>
+          <settings-default-brave-shields-page prefs="{{prefs}}"></settings-default-brave-shields-page>
         </settings-section>
       `
       const sectionSocialBlocking = document.createElement('template')

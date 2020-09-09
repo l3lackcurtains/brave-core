@@ -2,8 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-(function() {
-'use strict';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+import {DefaultBraveShieldsBrowserProxy, DefaultBraveShieldsBrowserProxyImpl} from './default_brave_shields_browser_proxy.m.js';
+import {loadTimeData} from "../i18n_setup.js"
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 /**
  * 'settings-default-brave-shields-page' is the settings page containing brave's
@@ -11,6 +15,8 @@
  */
 Polymer({
   is: 'settings-default-brave-shields-page',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     adControlTypes_: {
@@ -54,12 +60,14 @@ Polymer({
     fingerprintingControlType_: String,
   },
 
+  observers: ['onGeneratedPrefsUpdated_(prefs.generated.cookie_primary_setting)'],
+
   /** @private {?settings.DefaultBraveShieldsBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created: function() {
-    this.browserProxy_ = settings.DefaultBraveShieldsBrowserProxyImpl.getInstance();
+    this.browserProxy_ = DefaultBraveShieldsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -80,6 +88,13 @@ Polymer({
     this.browserProxy_.getFingerprintingControlType().then(value => {
       this.fingerprintingControlType_ = value;
     });
+  },
+
+  /** @private */
+  onGeneratedPrefsUpdated_: function() {
+    this.browserProxy_.getCookieControlType().then(value => {
+      this.cookieControlType_ = value;
+    })
   },
 
   /**
@@ -116,4 +131,3 @@ Polymer({
     this.browserProxy_.setNoScriptControlType(this.$.noScriptControlType.checked);
   }
 });
-})();
