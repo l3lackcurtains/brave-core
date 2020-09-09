@@ -10,6 +10,7 @@ import("//media/cdm/library_cdm/cdm_paths.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//brave/components/brave_rewards/browser/buildflags/buildflags.gni")
 import("//brave/build/cargo.gni")
+import("//ui/gl/features.gni")
 
 if (!is_ios) {
   import("//brave/brave_paks.gni")
@@ -360,6 +361,20 @@ if (!is_android && !is_ios) {
         } else {
           sources += [ "$root_out_dir/snapshot_blob.bin" ]
         }
+      }
+    }
+
+    if (is_linux) {
+      if (use_egl) {
+        sources += [
+          "$root_out_dir/libEGL.so",
+          "$root_out_dir/libGLESv2.so",
+        ]
+
+        deps += [
+          "//third_party/angle:libEGL",
+          "//third_party/angle:libGLESv2",
+        ]
       }
     }
 
