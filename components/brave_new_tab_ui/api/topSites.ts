@@ -3,8 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 
-let are_custom_links_enabled: boolean
-let is_visible: boolean
+let are_custom_links_enabled: boolean = true
+let is_visible: boolean = true
 
 export function updateMostVisitedInfo () {
   chrome.send('updateMostVisitedInfo')
