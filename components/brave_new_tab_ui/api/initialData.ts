@@ -14,7 +14,6 @@ export type InitialData = {
   stats: statsAPI.Stats
   privateTabData: privateTabDataAPI.PrivateTabData
   topSites: chrome.topSites.MostVisitedURL[]
-  defaultSuperReferralTopSites: undefined | NewTab.DefaultSuperReferralTopSite[]
   brandedWallpaperData: undefined | NewTab.BrandedWallpaper
   togetherSupported: boolean
   geminiSupported: boolean
@@ -44,7 +43,6 @@ export async function getInitialData (): Promise<InitialData> {
       stats,
       privateTabData,
       topSites,
-      defaultSuperReferralTopSites,
       brandedWallpaperData,
       togetherSupported,
       geminiSupported
@@ -53,7 +51,6 @@ export async function getInitialData (): Promise<InitialData> {
       statsAPI.getStats(),
       privateTabDataAPI.getPrivateTabData(),
       topSitesAPI.getTopSiteTiles(),
-      !isIncognito ? brandedWallpaper.getDefaultSuperReferralTopSites() : Promise.resolve(undefined),
       !isIncognito ? brandedWallpaper.getBrandedWallpaper() : Promise.resolve(undefined),
       new Promise((resolve) => {
         if (!('braveTogether' in chrome)) {
@@ -76,7 +73,6 @@ export async function getInitialData (): Promise<InitialData> {
       stats,
       privateTabData,
       topSites,
-      defaultSuperReferralTopSites,
       brandedWallpaperData,
       togetherSupported,
       geminiSupported

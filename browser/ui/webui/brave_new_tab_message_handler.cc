@@ -206,11 +206,6 @@ void BraveNewTabMessageHandler::RegisterMessages() {
     base::BindRepeating(
       &BraveNewTabMessageHandler::HandleGetBrandedWallpaperData,
       base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-    "getDefaultSuperReferralTopSitesData",
-    base::BindRepeating(
-      &BraveNewTabMessageHandler::HandleGetDefaultSuperReferralTopSitesData,
-      base::Unretained(this)));
 
   // TopSite tile methods (MostVisitedSiteInfo)
   web_ui()->RegisterMessageCallback(
@@ -410,16 +405,6 @@ void BraveNewTabMessageHandler::HandleGetBrandedWallpaperData(
   ResolveJavascriptCallback(
       args->GetList()[0],
       service ? service->GetCurrentWallpaperForDisplay() : base::Value());
-}
-
-void BraveNewTabMessageHandler::HandleGetDefaultSuperReferralTopSitesData(
-    const base::ListValue* args) {
-  AllowJavascript();
-
-  auto* service = ViewCounterServiceFactory::GetForProfile(profile_);
-  ResolveJavascriptCallback(
-      args->GetList()[0],
-      service ? service->GetTopSites(true) : base::Value());
 }
 
 // BEGIN - TopSite tile methods (MostVisitedSiteInfo)

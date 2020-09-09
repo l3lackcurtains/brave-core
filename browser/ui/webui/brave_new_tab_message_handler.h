@@ -44,7 +44,6 @@ class BraveNewTabMessageHandler : public content::WebUIMessageHandler,
       const base::ListValue* args);
   void HandleRegisterNewTabPageView(const base::ListValue* args);
   void HandleGetBrandedWallpaperData(const base::ListValue* args);
-  void HandleGetDefaultSuperReferralTopSitesData(const base::ListValue* args);
   // MostVisited methods
   void HandleGetMostVisitedInfo(const base::ListValue* args);
   void HandleDeleteMostVisitedTile(const base::ListValue* args);
